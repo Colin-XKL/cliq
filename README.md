@@ -18,3 +18,9 @@ cliQ 是一个轻量级工具，旨在将复杂的 CLI 命令转化为直观、�
 - 参数类型识别与建议：根据变量名或上下文智能推荐控件类型（如 --quality 自动识别为数字滑块）。
 - 跨平台支持：支持 Windows、macOS 和 Linux，适配本地命令环境。
 - 模板市场：用户可上传/下载常用工具模板（如 ImageMagick、ffmpeg、pngquant 等），构建共享生态。
+
+
+## 技术栈
+- 使用wails框架构建, 跨平台支持
+- 页面使用Vue3, 使用TypeScript
+- 使用PrimeVue组件库、Vite构建前端项目, 部分样式使用TailwindCSS
