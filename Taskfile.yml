@@ -6,4 +6,7 @@ tasks:
   dev:
     cmds: 
     - cd cliq && wails dev
-
+  clean:
+    cmds:
+      - rm -rf cliq/frontend/dist
+      - rm -rf cliq/build/bin
