@@ -9,7 +9,7 @@ cmds:
   - name: 压缩
     description: 压缩 PNG 文件
     # 实际执行使用的命令模板, 使用golang的template
-    command: "pngquant {{input_file}} --output {{output_file}} {{- if .skip_if_larger}} --skip-if-larger{{- end}}"
+    command: "pngquant {{input_file}} --output {{output_file}}"
 
     # 变量定义（关键部分）
     variables:
@@ -31,10 +31,10 @@ cmds:
           file_types: [".png"]
           default: "{{input_file}}_compressed.png"  # 支持变量插值
 
-      skip-if-larger:
-        type: boolean # boolean 的模式的话, 如果为true, 则带上参数. 如果为false, 则不带上参数.
-        arg_name: skip-if-larger # 如果定义了argname,则使用该值. 否则使用上面的key
-        label: 跳过未更改文件
-        description: 如果输出文件已存在且未更改，跳过写入
-        options:
-          default: false
+      # skip-if-larger:
+      #   type: boolean # boolean 的模式的话, 如果为true, 则带上参数. 如果为false, 则不带上参数.
+      #   arg_name: skip-if-larger # 如果定义了argname,则使用该值. 否则使用上面的key
+      #   label: 跳过未更改文件
+      #   description: 如果输出文件已存在且未更改，跳过写入
+      #   options:
+      #     default: false
