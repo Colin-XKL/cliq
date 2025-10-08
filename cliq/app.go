@@ -105,8 +105,9 @@ func (a *App) SaveFileDialog() (string, error) {
 }
 
 // ExecuteCommand executes a shell command with the given input and output file paths
-func (a *App) ExecuteCommand(inputFilePath string, outputFilePath string, commandID string, variables map[string]interface{}) (string, error) {
+func (a *App) ExecuteCommand(commandID string, variables map[string]interface{}) (string, error) {
 	// 根据 commandID 查找对应的命令
+
 	var selectedCommand Command
 	found := false
 	for _, cmd := range a.template.Cmds {
@@ -122,17 +123,11 @@ func (a *App) ExecuteCommand(inputFilePath string, outputFilePath string, comman
 	}
 
 	// 替换命令模板中的变量
-	commandStr := selectedCommand.Command
-	for name, value := range variables {
-		// TODO: 根据变量类型进行格式化，例如布尔值转换为 --flag 或空
-		commandStr = strings.ReplaceAll(commandStr, fmt.Sprintf("{{.%s}}", name), fmt.Sprintf("%v", value))
+	cmdTemplateStr := selectedCommand.Command
+	parts, err := getCommandParts(cmdTemplateStr, variables)
+	if err != nil {
+		return "", fmt.Errorf("获取命令文本失败: %w", err)
 	}
-
-	// 替换预设变量
-	commandStr = strings.ReplaceAll(commandStr, "{{.InputFile}}", inputFilePath)
-	commandStr = strings.ReplaceAll(commandStr, "{{.OutputFile}}", outputFilePath)
-
-	parts := strings.Fields(commandStr)
 	if len(parts) == 0 {
 		return "", errors.New("命令为空")
 	}
@@ -149,4 +144,41 @@ func (a *App) ExecuteCommand(inputFilePath string, outputFilePath string, comman
 	}
 
 	return strings.TrimSpace(string(out)), nil
+}
+
+func (a *App) GetCommandText(commandID string, variables map[string]interface{}) (string, error) {
+	var selectedCommand Command
+	found := false
+	for _, cmd := range a.template.Cmds {
+		if cmd.ID == commandID {
+			selectedCommand = cmd
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return "", fmt.Errorf("未找到命令: %s", commandID)
+	}
+
+	// 替换命令模板中的变量
+	cmdTemplateStr := selectedCommand.Command
+	parts, err := getCommandParts(cmdTemplateStr, variables)
+	if err != nil {
+		return "", fmt.Errorf("获取命令文本失败: %w", err)
+	}
+	return strings.Join(parts, " "), nil
+}
+
+func getCommandParts(cmdTemplateStr string, variables map[string]interface{}) ([]string, error) {
+	// 替换命令模板中的变量
+	commandStr := cmdTemplateStr
+	for name, value := range variables {
+		fmt.Println(name, value)
+		// TODO: 根据变量类型进行格式化，例如布尔值转换为 --flag 或空
+		commandStr = strings.ReplaceAll(commandStr, fmt.Sprintf("{{%s}}", name), fmt.Sprintf("%v", value))
+	}
+
+	parts := strings.Fields(commandStr)
+	return parts, nil
 }

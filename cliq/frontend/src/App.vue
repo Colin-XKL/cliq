@@ -1,33 +1,33 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { OpenFileDialog, SaveFileDialog, ExecuteCommand, ImportTemplate } from '../wailsjs/go/main/App';
-import { useToast } from 'primevue/usetoast';
 import { main } from '../wailsjs/go/models';
-import { Ref } from 'vue';
-import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Checkbox from 'primevue/checkbox';
-import FileUpload from 'primevue/fileupload';
+import TemplateManager from './components/TemplateManager.vue';
+import DynamicCommandForm from './components/DynamicCommandForm.vue';
+import CommandExecutor from './components/CommandExecutor.vue';
+import { useToastNotifications } from './composables/useToastNotifications';
 
-const toast = useToast();
-const inputFilePath = ref('');
-const outputFilePath = ref('');
+const { showToast } = useToastNotifications();
+
+const templateData = ref<main.TemplateFile>({} as main.TemplateFile);
+const selectedCommand = ref<any>(null);
+const commandVariableValues = ref<{ [key: string]: any }>({});
 const isProcessing = ref(false);
 const commandOutput = ref('');
-const templateData: Ref<main.TemplateFile> = ref({} as main.TemplateFile);
-const selectedCommand = ref<any>(null); // 当前选中的命令
-const commandVariableValues: Ref<{ [key: string]: any }> = ref({}); // 存储动态表单的变量值
+const inputFilePath = ref('');
+const outputFilePath = ref('');
 
-// 计算属性，用于将 selectedCommand.variables 转换为数组，方便遍历
-const commandVariables = computed(() => {
-  if (selectedCommand.value && selectedCommand.value.variables) {
-    return Object.entries(selectedCommand.value.variables).map(([name, variable]) => ({
-      name,
-      ...(variable as main.Variable),
-    }));
-  }
-  return [];
+watch(templateData, () => {
+  selectedCommand.value = null;
+  commandVariableValues.value = {};
+  inputFilePath.value = '';
+  outputFilePath.value = '';
+});
+
+watch(selectedCommand, () => {
+  commandVariableValues.value = {};
+  inputFilePath.value = '';
+  outputFilePath.value = '';
 });
 
 // 导入模板
@@ -84,7 +84,7 @@ const runCommand = async () => {
 
   try {
     // 使用选中的命令ID执行命令，并传递变量
-    const result = await ExecuteCommand(inputFilePath.value, outputFilePath.value, selectedCommand.value.id, commandVariableValues.value);
+    const result = await ExecuteCommand(selectedCommand.value.id, commandVariableValues.value);
     commandOutput.value = result;
     showToast('成功', '命令执行成功', 'success');
   } catch (error) {
@@ -94,123 +94,27 @@ const runCommand = async () => {
     isProcessing.value = false;
   }
 };
-type ToastSeverity = 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast'
-// 显示提示消息
-const showToast = (summary: string, detail: string, severity: ToastSeverity) => {
-  toast.add({
-    severity,
-    summary,
-    detail,
-    life: 3000
-  });
-};
 </script>
 
 <template>
   <div class="homepage-bg h-full w-full">
-    <div class="flex flex-col items-center justify-center h-full p-6">
+    <div class="flex flex-col items-center justify-center h-[100]vh p-6">
       <div class="w-full max-w-2xl">
         <div class="text-center mb-8">
           <h1 class="text-4xl font-bold mt-4">cliQ</h1>
           <p class="text-xl mt-2">将复杂的 CLI 命令转化为直观、易用的图形用户界面</p>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <div v-if="!templateData.name" class="text-center py-12">
-            <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
-            <p class="text-gray-600 mb-8">请导入模板文件以开始使用</p>
-            <button @click="importTemplate"
-              class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
-              导入模板
-            </button>
-          </div>
+        <div class="bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-4/5">
+          <TemplateManager v-model:templateData="templateData" v-model:selectedCommand="selectedCommand" />
 
-          <div v-else>
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-2xl font-bold text-black">{{ templateData.name }}</h2>
-              <button @click="importTemplate"
-                class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
-                更换模板
-              </button>
-            </div>
-            <p class="mb-6 text-gray-600">{{ templateData.description }}</p>
+          <DynamicCommandForm v-if="templateData.name" :selectedCommand="selectedCommand"
+            v-model:commandVariableValues="commandVariableValues" v-model:inputFilePath="inputFilePath"
+            v-model:outputFilePath="outputFilePath" />
 
-            <!-- 模板信息显示 -->
-            <div class="mb-6 p-4 bg-blue-50 rounded-md">
-              <p class="text-xs text-blue-500">作者: {{ templateData.author }} | 版本: {{ templateData.version }}</p>
-            </div>
-
-            <!-- 命令选择 -->
-            <div class="mb-6" v-if="templateData.cmds && templateData.cmds.length > 0">
-              <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
-              <Dropdown v-model="selectedCommand" :options="templateData.cmds" optionLabel="name" class="w-full"
-                placeholder="选择要执行的命令">
-                <template #value="slotProps">
-                  <div class="flex align-items-center">
-                    <div>{{ slotProps.value.name }}</div>
-                  </div>
-                </template>
-                <template #option="slotProps">
-                  <div class="flex flex-col">
-                    <div>{{ slotProps.option.name }}</div>
-                    <small class="text-gray-500">{{ slotProps.option.description }}</small>
-                  </div>
-                </template>
-              </Dropdown>
-              <p class="mt-2 text-sm text-gray-500" v-if="selectedCommand">{{ selectedCommand.description }}</p>
-            </div>
-
-            <!-- 动态表单 -->
-            <div v-if="selectedCommand && commandVariables.length > 0" class="mb-6 p-4 bg-blue-50 rounded-md">
-              <h3 class="font-medium mb-4">命令参数</h3>
-              <div v-for="variable in commandVariables" :key="variable.name" class="mb-4">
-                <label :for="variable.name" class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ variable.label }}
-                  <span v-if="variable.required" class="text-red-500">*</span>
-                </label>
-                <!-- 文本输入 -->
-                <InputText v-if="variable.type === 'text'" :id="variable.name"
-                  v-model="commandVariableValues[variable.name]" class="w-full" :placeholder="variable.description" />
-                <!-- 数字输入 -->
-                <InputNumber v-else-if="variable.type === 'number'" :id="variable.name"
-                  v-model="commandVariableValues[variable.name]" class="w-full" :placeholder="variable.description" />
-                <!-- 布尔值 (Checkbox) -->
-                <Checkbox v-else-if="variable.type === 'boolean'" :id="variable.name"
-                  v-model="commandVariableValues[variable.name]" :binary="true" />
-                <!-- 文件输入 -->
-                <div v-else-if="variable.type === 'file_input' || variable.type === 'file_output'"
-                  class="flex items-center space-x-2">
-                  <InputText :id="variable.name" v-model="commandVariableValues[variable.name]" class="w-full" readonly
-                    :placeholder="variable.description" />
-                  <button type="button" @click="openFileSelection(variable.name, variable.type)"
-                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
-                    选择文件
-                  </button>
-                </div>
-                <!-- 下拉选择 -->
-                <Dropdown v-else-if="variable.type === 'select'" :id="variable.name"
-                  v-model="commandVariableValues[variable.name]" :options="Object.keys(variable.options || {})"
-                  class="w-full" :placeholder="variable.description" />
-                <small v-if="variable.description" class="mt-1 text-sm text-gray-500">{{ variable.description }}</small>
-              </div>
-            </div>
-
-            <!-- 运行按钮 -->
-            <div class="flex justify-center">
-              <button @click="runCommand"
-                class="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 focus:outline-none disabled:bg-gray-400"
-                :disabled="isProcessing">
-                <span v-if="isProcessing">处理中...</span>
-                <span v-else>运行命令</span>
-              </button>
-            </div>
-
-            <!-- 命令输出 -->
-            <div v-if="commandOutput" class="mt-6 p-4 bg-gray-100 rounded-md">
-              <h3 class="font-medium mb-2">命令输出:</h3>
-              <pre class="text-sm whitespace-pre-wrap">{{ commandOutput }}</pre>
-            </div>
-          </div>
+          <CommandExecutor v-if="templateData.name" :selectedCommand="selectedCommand"
+            :commandVariableValues="commandVariableValues" v-model:isProcessing="isProcessing"
+            v-model:commandOutput="commandOutput" :inputFilePath="inputFilePath" :outputFilePath="outputFilePath" />
         </div>
       </div>
     </div>
