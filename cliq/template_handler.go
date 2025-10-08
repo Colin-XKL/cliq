@@ -9,10 +9,12 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v3"
+
+	"cliq/models"
 )
 
 // ImportTemplate 导入模板文件
-func (a *App) ImportTemplate() (*TemplateFile, error) {
+func (a *App) ImportTemplate() (*models.TemplateFile, error) {
 	// 打开文件选择对话框
 	filePath, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: "选择模板文件",
@@ -45,7 +47,7 @@ func (a *App) ImportTemplate() (*TemplateFile, error) {
 }
 
 // ImportTemplateFromURL 从URL导入模板文件
-func (a *App) ImportTemplateFromURL(url string) (*TemplateFile, error) {
+func (a *App) ImportTemplateFromURL(url string) (*models.TemplateFile, error) {
 	// 从URL下载内容
 	resp, err := http.Get(url)
 	if err != nil {
@@ -64,7 +66,7 @@ func (a *App) ImportTemplateFromURL(url string) (*TemplateFile, error) {
 	}
 
 	// 解析YAML
-	var template TemplateFile
+	var template models.TemplateFile
 	err = yaml.Unmarshal(data, &template)
 	if err != nil {
 		return nil, fmt.Errorf("解析YAML失败: %w", err)
@@ -81,7 +83,7 @@ func (a *App) ImportTemplateFromURL(url string) (*TemplateFile, error) {
 }
 
 // ParseTemplateFile 解析模板文件
-func ParseTemplateFile(filePath string) (*TemplateFile, error) {
+func ParseTemplateFile(filePath string) (*models.TemplateFile, error) {
 	// 读取文件内容
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -89,7 +91,7 @@ func ParseTemplateFile(filePath string) (*TemplateFile, error) {
 	}
 
 	// 解析YAML
-	var template TemplateFile
+	var template models.TemplateFile
 	err = yaml.Unmarshal(data, &template)
 	if err != nil {
 		return nil, fmt.Errorf("解析YAML失败: %w", err)
@@ -104,7 +106,7 @@ func ParseTemplateFile(filePath string) (*TemplateFile, error) {
 }
 
 // ValidateTemplate 验证模板是否合法
-func validateTemplate(template *TemplateFile) error {
+func validateTemplate(template *models.TemplateFile) error {
 	// 验证基本信息
 	if template.Name == "" {
 		return errors.New("模板名称不能为空")
@@ -136,7 +138,7 @@ func validateTemplate(template *TemplateFile) error {
 
 			// 验证变量类型
 			switch variable.Type {
-			case VarTypeText, VarTypeFileInput, VarTypeFileOutput, VarTypeBoolean, VarTypeNumber, VarTypeSelect:
+			case models.VarTypeText, models.VarTypeFileInput, models.VarTypeFileOutput, models.VarTypeBoolean, models.VarTypeNumber, models.VarTypeSelect:
 				// 合法类型
 			default:
 				return fmt.Errorf("命令 #%d 变量 %s 的类型 %s 不支持", i+1, name, variable.Type)

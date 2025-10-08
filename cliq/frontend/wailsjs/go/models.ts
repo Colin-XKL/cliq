@@ -1,4 +1,4 @@
-export namespace main {
+export namespace models {
 	
 	export class Variable {
 	    type: string;
