@@ -1,18 +1,18 @@
 # cliQ
 
-**cliQ** 发音：/klɪk/，类似“click”
-cliQ 是一个轻量级工具，旨在将复杂的 CLI 命令转化为直观、易用的图形用户界面（GUI）。
+**cliQ** /klɪk/, similar to "click"
+cliQ is a lightweight tool designed to transform complex CLI commands into intuitive and user-friendly graphical user interfaces (GUIs).
 
-用户只需定义一条带有变量占位符的命令模板，即可自动生成对应的 GUI 界面，通过点击、选择等方式完成参数输入，无需记忆命令语法，极大提升使用体验和操作效率。
+Users only need to define a command template with variable placeholders, and the corresponding GUI interface will be automatically generated. Parameters can be filled in through clicking and selecting, eliminating the need to memorize command syntax and significantly improving user experience and operational efficiency.
 
-## 主要功能
-- 命令模板定义：用户可输入 CLI 命令，生成对应的动态表单界面。
-- 模板导入/导出：支持将模板(`.cliqfile.yaml`)导出为文件，或从他人导入，便于团队共享。
-- 多种输入组件支持：支持文件选择器、数字输入框、下拉选择框、复选框等，适配不同参数类型。
-- 跨平台支持：支持 Windows、macOS 和 Linux 平台
-- 模板市场：用户可上传/下载常用工具模板（如 ImageMagick、ffmpeg、pngquant 等），构建共享生态。
+## Key Features
+- Command template definition: Users can input CLI commands to generate corresponding dynamic form interfaces.
+- Template import/export: Supports exporting templates (`.cliqfile.yaml`) as files or importing from others, facilitating team collaboration.
+- Multiple input component support: Supports file selectors, number input boxes, dropdown selectors, checkboxes, etc., adapting to different parameter types.
+- Cross-platform support: Supports Windows, macOS, and Linux platforms
+- Template marketplace: Users can upload/download templates for common tools (such as ImageMagick, ffmpeg, pngquant, etc.) to build a shared ecosystem.
 
-## 技术栈
-- 使用wails框架构建, 跨平台支持
-- 页面使用Vue3, 使用TypeScript
-- 使用PrimeVue组件库、Vite构建前端项目, 部分样式使用TailwindCSS
+## Tech Stack
+- Built with the wails framework for cross-platform support
+- Frontend uses Vue3 with TypeScript
+- Uses PrimeVue component library, Vite to build the frontend project, with TailwindCSS for some styling
