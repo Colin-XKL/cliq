@@ -6,6 +6,14 @@ export function ExecuteCommand(arg1, arg2) {
   return window['go']['main']['App']['ExecuteCommand'](arg1, arg2);
 }
 
+export function ExportTemplateToFile(arg1, arg2) {
+  return window['go']['main']['App']['ExportTemplateToFile'](arg1, arg2);
+}
+
+export function GenerateYAMLFromTemplate(arg1) {
+  return window['go']['main']['App']['GenerateYAMLFromTemplate'](arg1);
+}
+
 export function GetCommandText(arg1, arg2) {
   return window['go']['main']['App']['GetCommandText'](arg1, arg2);
 }
@@ -22,6 +30,14 @@ export function OpenFileDialog() {
   return window['go']['main']['App']['OpenFileDialog']();
 }
 
+export function ParseCommandToTemplate(arg1) {
+  return window['go']['main']['App']['ParseCommandToTemplate'](arg1);
+}
+
 export function SaveFileDialog() {
   return window['go']['main']['App']['SaveFileDialog']();
+}
+
+export function ValidateYAMLTemplate(arg1) {
+  return window['go']['main']['App']['ValidateYAMLTemplate'](arg1);
 }

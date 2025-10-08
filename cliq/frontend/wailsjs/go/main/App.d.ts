@@ -4,6 +4,10 @@ import {main} from '../models';
 
 export function ExecuteCommand(arg1:string,arg2:Record<string, any>):Promise<string>;
 
+export function ExportTemplateToFile(arg1:main.TemplateFile,arg2:string):Promise<void>;
+
+export function GenerateYAMLFromTemplate(arg1:main.TemplateFile):Promise<string>;
+
 export function GetCommandText(arg1:string,arg2:Record<string, any>):Promise<string>;
 
 export function ImportTemplate():Promise<main.TemplateFile>;
@@ -12,4 +16,8 @@ export function ImportTemplateFromURL(arg1:string):Promise<main.TemplateFile>;
 
 export function OpenFileDialog():Promise<string>;
 
+export function ParseCommandToTemplate(arg1:string):Promise<main.TemplateFile>;
+
 export function SaveFileDialog():Promise<string>;
+
+export function ValidateYAMLTemplate(arg1:string):Promise<void>;
