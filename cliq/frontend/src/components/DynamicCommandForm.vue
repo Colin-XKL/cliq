@@ -63,25 +63,11 @@ watch(() => props.commandVariableValues, (newValue) => {
   commandVariableValuesInternal.value = newValue;
 }, { deep: true });
 
-watch(() => props.inputFilePath, (newValue) => {
-  inputFilePathInternal.value = newValue;
-});
-
-watch(() => props.outputFilePath, (newValue) => {
-  outputFilePathInternal.value = newValue;
-});
 
 watch(commandVariableValuesInternal, (newValue) => {
   emit('update:commandVariableValues', newValue);
 }, { deep: true });
 
-watch(inputFilePathInternal, (newValue) => {
-  emit('update:inputFilePath', newValue);
-});
-
-watch(outputFilePathInternal, (newValue) => {
-  emit('update:outputFilePath', newValue);
-});
 
 const commandVariables = computed(() => {
   if (props.selectedCommand && props.selectedCommand.variables) {

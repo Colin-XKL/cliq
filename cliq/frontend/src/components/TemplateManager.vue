@@ -56,7 +56,7 @@ const props = defineProps({
   selectedCommand: { type: Object as () => any, default: null },
 });
 
-const emit = defineEmits(['update:templateData', 'update:selectedCommand']);
+const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template']);
 
 const { showToast } = useToastNotifications();
 
@@ -88,8 +88,8 @@ const importTemplate = async () => {
       if (result.cmds && result.cmds.length > 0) {
         selectedCommandInternal.value = result.cmds[0];
       }
+      emit('reset-template');
       showToast('成功', '模板导入成功', 'success');
-      console.log('导入的模板数据:', result);
     }
   } catch (error) {
     showToast('错误', `导入模板失败: ${error}`, 'error');
