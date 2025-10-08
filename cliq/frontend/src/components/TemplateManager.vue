@@ -2,19 +2,31 @@
   <div v-if="!templateData.name" class="text-center py-12">
     <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
     <p class="text-gray-600 mb-8">请导入模板文件以开始使用</p>
-    <button @click="importTemplate"
-      class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
-      导入模板
-    </button>
+    <div class="flex justify-center gap-4">
+      <button @click="importTemplate"
+        class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
+        导入模板
+      </button>
+      <button @click="showUrlImportDialog = true"
+        class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none text-lg">
+        URL导入
+      </button>
+    </div>
   </div>
 
   <div v-else>
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold text-black">{{ templateData.name }}</h2>
-      <button @click="importTemplate"
-        class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
-        更换模板
-      </button>
+      <div class="flex gap-2">
+        <button @click="importTemplate"
+          class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
+          更换模板
+        </button>
+        <button @click="showUrlImportDialog = true"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
+          URL导入
+        </button>
+      </div>
     </div>
     <p class="mb-6 text-gray-600">{{ templateData.description }}</p>
 
@@ -42,11 +54,34 @@
       <p class="mt-2 text-sm text-gray-500" v-if="selectedCommandInternal">{{ selectedCommandInternal.description }}</p>
     </div>
   </div>
+
+  <!-- URL导入对话框 -->
+  <div v-if="showUrlImportDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4">从URL导入模板</h3>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模板URL</label>
+        <input v-model="templateUrl" type="text" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="https://example.com/template.cliqfile.yaml">
+      </div>
+      <div class="flex justify-end gap-2">
+        <button @click="cancelUrlImport" 
+          class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+          取消
+        </button>
+        <button @click="importTemplateFromUrl" 
+          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+          导入
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { ImportTemplate } from '../../wailsjs/go/main/App';
+import { ImportTemplate, ImportTemplateFromURL } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
 import { useToastNotifications } from '../composables/useToastNotifications';
@@ -62,6 +97,8 @@ const { showToast } = useToastNotifications();
 
 const templateDataInternal = ref(props.templateData);
 const selectedCommandInternal = ref(props.selectedCommand);
+const showUrlImportDialog = ref(false);
+const templateUrl = ref('');
 
 watch(() => props.templateData, (newValue) => {
   templateDataInternal.value = newValue;
@@ -95,6 +132,35 @@ const importTemplate = async () => {
     showToast('错误', `导入模板失败: ${error}`, 'error');
     console.error('导入模板失败:', error);
   }
+};
+
+const importTemplateFromUrl = async () => {
+  if (!templateUrl.value.trim()) {
+    showToast('错误', '请输入模板URL', 'error');
+    return;
+  }
+
+  try {
+    emit('reset-template');
+    const result = await ImportTemplateFromURL(templateUrl.value);
+    if (result) {
+      templateDataInternal.value = result;
+      selectedCommandInternal.value = null; // Reset selected command on new template import
+      if (result.cmds && result.cmds.length > 0) {
+        selectedCommandInternal.value = result.cmds[0];
+      }
+      showToast('成功', '模板导入成功', 'success');
+      cancelUrlImport(); // Close the dialog
+    }
+  } catch (error) {
+    showToast('错误', `从URL导入模板失败: ${error}`, 'error');
+    console.error('从URL导入模板失败:', error);
+  }
+};
+
+const cancelUrlImport = () => {
+  showUrlImportDialog.value = false;
+  templateUrl.value = '';
 };
 
 </script>

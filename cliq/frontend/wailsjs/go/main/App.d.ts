@@ -8,6 +8,8 @@ export function GetCommandText(arg1:string,arg2:Record<string, any>):Promise<str
 
 export function ImportTemplate():Promise<main.TemplateFile>;
 
+export function ImportTemplateFromURL(arg1:string):Promise<main.TemplateFile>;
+
 export function OpenFileDialog():Promise<string>;
 
 export function SaveFileDialog():Promise<string>;

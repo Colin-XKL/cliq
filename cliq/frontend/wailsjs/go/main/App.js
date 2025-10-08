@@ -14,6 +14,10 @@ export function ImportTemplate() {
   return window['go']['main']['App']['ImportTemplate']();
 }
 
+export function ImportTemplateFromURL(arg1) {
+  return window['go']['main']['App']['ImportTemplateFromURL'](arg1);
+}
+
 export function OpenFileDialog() {
   return window['go']['main']['App']['OpenFileDialog']();
 }

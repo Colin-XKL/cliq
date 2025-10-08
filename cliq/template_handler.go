@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -40,6 +42,42 @@ func (a *App) ImportTemplate() (*TemplateFile, error) {
 	a.template = template // 将解析后的模板赋值给 App 结构体
 
 	return template, nil
+}
+
+// ImportTemplateFromURL 从URL导入模板文件
+func (a *App) ImportTemplateFromURL(url string) (*TemplateFile, error) {
+	// 从URL下载内容
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("下载模板文件失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("下载失败，状态码: %d", resp.StatusCode)
+	}
+
+	// 读取响应内容
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取模板内容失败: %w", err)
+	}
+
+	// 解析YAML
+	var template TemplateFile
+	err = yaml.Unmarshal(data, &template)
+	if err != nil {
+		return nil, fmt.Errorf("解析YAML失败: %w", err)
+	}
+
+	// 验证模板
+	if err := validateTemplate(&template); err != nil {
+		return nil, err
+	}
+
+	a.template = &template // 将解析后的模板赋值给 App 结构体
+
+	return &template, nil
 }
 
 // ParseTemplateFile 解析模板文件
