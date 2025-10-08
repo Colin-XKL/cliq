@@ -20,4 +20,6 @@ export function ParseCommandToTemplate(arg1:string):Promise<main.TemplateFile>;
 
 export function SaveFileDialog():Promise<string>;
 
+export function SaveYAMLToFile(arg1:string):Promise<void>;
+
 export function ValidateYAMLTemplate(arg1:string):Promise<void>;

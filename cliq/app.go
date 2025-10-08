@@ -378,3 +378,43 @@ func (a *App) ExportTemplateToFile(template *TemplateFile, filePath string) erro
 
 	return nil
 }
+
+// SaveYAMLToFile opens a save file dialog and saves the YAML content to the selected file
+func (a *App) SaveYAMLToFile(yamlContent string) error {
+	if yamlContent == "" {
+		return fmt.Errorf("YAML内容不能为空")
+	}
+
+	// Open save file dialog
+	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Title: "保存模板文件",
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "CLIQ模板文件 (*.yaml, *.yml)",
+				Pattern:     "*.yaml;*.yml",
+			},
+			{
+				DisplayName: "所有文件 (*.*)",
+				Pattern:     "*.*",
+			},
+		},
+		DefaultFilename: "template.cliqfile.yaml",
+	})
+
+	if err != nil {
+		return fmt.Errorf("打开保存对话框失败: %w", err)
+	}
+
+	// 用户取消选择
+	if filePath == "" {
+		return fmt.Errorf("未选择保存路径")
+	}
+
+	// Write content to file
+	err = os.WriteFile(filePath, []byte(yamlContent), 0644)
+	if err != nil {
+		return fmt.Errorf("写入文件失败: %w", err)
+	}
+
+	return nil
+}

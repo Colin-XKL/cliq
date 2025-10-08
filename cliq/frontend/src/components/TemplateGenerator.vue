@@ -60,22 +60,12 @@
         </div>
       </div>
     </div>
-    
-    <!-- 错误提示 -->
-    <div v-if="errorMessage" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
-      <p class="text-red-600">{{ errorMessage }}</p>
-    </div>
-    
-    <!-- 成功提示 -->
-    <div v-if="successMessage" class="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-      <p class="text-green-600">{{ successMessage }}</p>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, ExportTemplateToFile } from '../../wailsjs/go/main/App';
+import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
@@ -85,20 +75,14 @@ const { showToast } = useToastNotifications();
 
 const commandInput = ref('');
 const generatedYaml = ref('');
-const errorMessage = ref('');
-const successMessage = ref('');
 
 const generateTemplate = async () => {
   if (!commandInput.value.trim()) {
-    errorMessage.value = '请输入CLI命令';
-    successMessage.value = '';
+    showToast('错误', '请输入CLI命令', 'error');
     return;
   }
   
   try {
-    errorMessage.value = '';
-    successMessage.value = '';
-    
     // 首先解析命令为模板对象
     const templateObj = await ParseCommandToTemplate(commandInput.value);
     if (templateObj) {
@@ -106,11 +90,10 @@ const generateTemplate = async () => {
       const yamlStr = await GenerateYAMLFromTemplate(templateObj);
       generatedYaml.value = yamlStr;
       
-      successMessage.value = '模板生成成功';
+      showToast('成功', '模板生成成功', 'success');
     }
   } catch (error) {
-    errorMessage.value = `生成模板失败: ${error}`;
-    successMessage.value = '';
+    showToast('错误', `生成模板失败: ${error}`, 'error');
     console.error('生成模板失败:', error);
   }
 };
@@ -136,18 +119,7 @@ const exportTemplate = async () => {
   }
   
   try {
-    // In a real implementation, we would call the backend to save the file
-    // For now, create and download a file directly from frontend
-    const blob = new Blob([generatedYaml.value], { type: 'text/yaml' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'generated_template.cliqfile.yaml';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
+    await SaveYAMLToFile(generatedYaml.value);
     showToast('成功', '模板已导出', 'success');
   } catch (error) {
     showToast('错误', '导出失败: ' + error, 'error');

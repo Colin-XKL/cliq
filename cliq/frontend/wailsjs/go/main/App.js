@@ -38,6 +38,10 @@ export function SaveFileDialog() {
   return window['go']['main']['App']['SaveFileDialog']();
 }
 
+export function SaveYAMLToFile(arg1) {
+  return window['go']['main']['App']['SaveYAMLToFile'](arg1);
+}
+
 export function ValidateYAMLTemplate(arg1) {
   return window['go']['main']['App']['ValidateYAMLTemplate'](arg1);
 }
