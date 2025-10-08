@@ -4,6 +4,7 @@ import { main } from '../wailsjs/go/models';
 import TemplateManager from './components/TemplateManager.vue';
 import DynamicCommandForm from './components/DynamicCommandForm.vue';
 import CommandExecutor from './components/CommandExecutor.vue';
+import Button from 'primevue/button';
 
 const templateData = ref<main.TemplateFile>({} as main.TemplateFile);
 const selectedCommand = ref<any>(null);
@@ -28,6 +29,7 @@ const resetTemplate = () => {
           <h1 class="text-4xl font-bold mt-4">cliQ</h1>
           <p class="text-xl mt-2">将复杂的 CLI 命令转化为直观、易用的图形用户界面</p>
         </div>
+        <Button @click="resetTemplate">Reset</Button>
 
         <div class="bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-4/5">
           <TemplateManager v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"

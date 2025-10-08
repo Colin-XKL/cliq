@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { ImportTemplate } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
@@ -81,6 +81,7 @@ watch(selectedCommandInternal, (newValue) => {
 
 const importTemplate = async () => {
   try {
+    emit('reset-template');
     const result = await ImportTemplate();
     if (result) {
       templateDataInternal.value = result;
@@ -88,7 +89,6 @@ const importTemplate = async () => {
       if (result.cmds && result.cmds.length > 0) {
         selectedCommandInternal.value = result.cmds[0];
       }
-      emit('reset-template');
       showToast('成功', '模板导入成功', 'success');
     }
   } catch (error) {
