@@ -1,0 +1,53 @@
+.homepage-bg {
+  background: radial-gradient(100% 100% at 4% 3%, #ffffff 0%, transparent),
+    radial-gradient(
+      100% 100% at var(--g2-1-x-position) var(--g2-1-y-position),
+      #1d1ba7 -32%,
+      transparent
+    ),
+    radial-gradient(
+      100% 100% at var(--g2-2-x-position) var(--g2-2-y-position),
+      #235fd7 0%,
+      transparent
+    ),
+    #ffffff;
+  animation-name: g-2;
+  animation-iteration-count: infinite;
+  animation-duration: 10s;
+  transition-timing-function: ease-in-out;
+}
+
+@property --g2-1-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 87.96875%;
+}
+@property --g2-1-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 91.1328125%;
+}
+@property --g2-2-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 13.398437500000002%;
+}
+@property --g2-2-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 82.734375%;
+}
+:root {
+  --g2-1-x-position: 87.96875%;
+  --g2-1-y-position: 91.1328125%;
+  --g2-2-x-position: 13.398437500000002%;
+  --g2-2-y-position: 82.734375%;
+}
+@keyframes g-2 {
+  50% {
+    --g2-1-x-position: 15%;
+    --g2-1-y-position: 15%;
+    --g2-2-x-position: 61.21093749999999%;
+    --g2-2-y-position: 13.750000000000002%;
+  }
+}
