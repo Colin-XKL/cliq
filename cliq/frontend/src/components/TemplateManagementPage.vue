@@ -12,9 +12,10 @@
         <Column field="version" header="版本"></Column>
         <Column header="操作">
           <template #body="slotProps">
-            <Button icon="pi pi-eye" class="p-button-rounded p-button-info mr-2" @click="viewTemplate(slotProps.data)" />
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editTemplate(slotProps.data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-warning" @click="confirmDeleteTemplate(slotProps.data)" />
+            <Button icon="pi pi-eye" size="small" @click="viewTemplate(slotProps.data)" rounded variant="outlined" />
+            <Button icon="pi pi-pencil" size="small" @click="editTemplate(slotProps.data)" rounded variant="outlined" />
+            <Button icon="pi pi-trash" size="small" @click="confirmDeleteTemplate(slotProps.data)" rounded
+              variant="outlined" />
           </template>
         </Column>
       </DataTable>
@@ -31,7 +32,8 @@
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="displayViewDialog" :header="`预览模板: ${templateToView ? templateToView.name : ''}`" :modal="true" :style="{ width: '50vw' }">
+    <Dialog v-model:visible="displayViewDialog" :header="`预览模板: ${templateToView ? templateToView.name : ''}`"
+      :modal="true" :style="{ width: '50vw' }">
       <div class="p-fluid">
         <Textarea v-model="templateContentToView" rows="20" cols="30" readonly />
       </div>

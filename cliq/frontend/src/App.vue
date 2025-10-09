@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { models } from '../wailsjs/go/models';
 import { ListFavTemplates } from '../wailsjs/go/main/App';
-import TemplateManager from './components/TemplateManager.vue';
+import MainPage from './components/MainPage.vue';
 import DynamicCommandForm from './components/DynamicCommandForm.vue';
 import CommandExecutor from './components/CommandExecutor.vue';
 import TemplateGenerator from './components/TemplateGenerator.vue';
@@ -71,7 +71,7 @@ onMounted(async () => {
           <div v-if="currentView === 'main'">
             <Button @click="resetTemplate">Reset</Button>
 
-            <TemplateManager v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
+            <MainPage v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
               @reset-template="resetTemplate" :favTemplates="favTemplates" @fav-template-updated="loadFavTemplates" />
 
             <DynamicCommandForm v-if="templateData.name" :selectedCommand="selectedCommand"

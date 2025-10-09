@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!templateData.name" class="text-center py-12">
+  <div v-if="!templateDataInternal.name" class="text-center py-12">
     <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
     <p class="text-gray-600 mb-8">请导入模板文件以开始使用</p>
     <div class="flex justify-center gap-4">
@@ -28,7 +28,7 @@
 
   <div v-else>
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-black">{{ templateData.name }}</h2>
+      <h2 class="text-2xl font-bold text-black">{{ templateDataInternal.name }}</h2>
       <div class="flex gap-2">
         <button @click="importTemplate"
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
@@ -44,17 +44,17 @@
         </button>
       </div>
     </div>
-    <p class="mb-6 text-gray-600">{{ templateData.description }}</p>
+    <p class="mb-6 text-gray-600">{{ templateDataInternal.description }}</p>
 
     <!-- 模板信息显示 -->
     <div class="mb-6 p-4 bg-blue-50 rounded-md">
-      <p class="text-xs text-blue-500">作者: {{ templateData.author }} | 版本: {{ templateData.version }}</p>
+      <p class="text-xs text-blue-500">作者: {{ templateDataInternal.author }} | 版本: {{ templateDataInternal.version }}</p>
     </div>
 
     <!-- 命令选择 -->
-    <div class="mb-6" v-if="templateData.cmds && templateData.cmds.length > 0">
+    <div class="mb-6" v-if="templateDataInternal.cmds && templateDataInternal.cmds.length > 0">
       <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
-      <Dropdown v-model="selectedCommandInternal" :options="templateData.cmds" optionLabel="name" class="w-full"
+      <Dropdown v-model="selectedCommandInternal" :options="templateDataInternal.cmds" optionLabel="name" class="w-full"
         placeholder="选择要执行的命令">
         <template #value="slotProps">
           <div class="flex align-items-center">
@@ -100,7 +100,6 @@ import { ref, watch } from 'vue';
 import { ImportTemplate, ImportTemplateFromURL } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
-import Listbox from 'primevue/listbox';
 import { useToastNotifications } from '../composables/useToastNotifications';
 import { SaveFavTemplate } from '../../wailsjs/go/main/App';
 
