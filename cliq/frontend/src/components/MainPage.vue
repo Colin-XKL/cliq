@@ -12,7 +12,16 @@
         从URL导入
       </button>
     </div>
-
+    <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
+      <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
+          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100">
+          <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
+          <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
+        </div>
+      </div>
+    </div>
 
   </div>
 
