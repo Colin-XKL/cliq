@@ -13,17 +13,7 @@
       </button>
     </div>
 
-    <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
-      <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
-             @click="selectFavTemplate(template)"
-             class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100">
-          <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
-          <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <div v-else>
@@ -48,7 +38,8 @@
 
     <!-- 模板信息显示 -->
     <div class="mb-6 p-4 bg-blue-50 rounded-md">
-      <p class="text-xs text-blue-500">作者: {{ templateDataInternal.author }} | 版本: {{ templateDataInternal.version }}</p>
+      <p class="text-xs text-blue-500">作者: {{ templateDataInternal.author }} | 版本: {{ templateDataInternal.version }}
+      </p>
     </div>
 
     <!-- 命令选择 -->
@@ -77,17 +68,15 @@
       <h3 class="text-lg font-semibold mb-4">从URL导入模板</h3>
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">模板URL</label>
-        <input v-model="templateUrl" type="text" 
+        <input v-model="templateUrl" type="text"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="https://example.com/template.cliqfile.yaml">
       </div>
       <div class="flex justify-end gap-2">
-        <button @click="cancelUrlImport" 
-          class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+        <button @click="cancelUrlImport" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
           取消
         </button>
-        <button @click="importTemplateFromUrl" 
-          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+        <button @click="importTemplateFromUrl" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
           导入
         </button>
       </div>
@@ -117,7 +106,6 @@ const templateDataInternal = ref(props.templateData);
 const selectedCommandInternal = ref(props.selectedCommand);
 const showUrlImportDialog = ref(false);
 const templateUrl = ref('');
-const selectedFavTemplate = ref<models.TemplateFile | null>(null);
 
 watch(() => props.templateData, (newValue) => {
   templateDataInternal.value = newValue;
@@ -125,12 +113,6 @@ watch(() => props.templateData, (newValue) => {
 
 watch(() => props.selectedCommand, (newValue) => {
   selectedCommandInternal.value = newValue;
-});
-
-watch(() => props.favTemplates, (newValue) => {
-  if (newValue.length > 0 && !selectedFavTemplate.value) {
-    selectedFavTemplate.value = newValue[0];
-  }
 });
 
 watch(templateDataInternal, (newValue) => {
@@ -183,17 +165,7 @@ const importTemplateFromUrl = async () => {
   }
 };
 
-const loadFavTemplate = () => {
-  if (selectedFavTemplate.value) {
-    emit('reset-template');
-    templateDataInternal.value = { ...selectedFavTemplate.value };
-    selectedCommandInternal.value = null;
-    if (selectedFavTemplate.value.cmds && selectedFavTemplate.value.cmds.length > 0) {
-      selectedCommandInternal.value = selectedFavTemplate.value.cmds[0];
-    }
-    showToast('成功', `已加载收藏模板: ${selectedFavTemplate.value.name}`, 'success');
-  }
-};
+
 
 const cancelUrlImport = () => {
   showUrlImportDialog.value = false;
@@ -216,9 +188,6 @@ const addTemplateToFavorites = async () => {
   }
 };
 
-const selectFavTemplate = (template: models.TemplateFile) => {
-  selectedFavTemplate.value = template;
-  loadFavTemplate();
-};
+
 
 </script>
