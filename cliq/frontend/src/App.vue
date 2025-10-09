@@ -25,13 +25,17 @@ const resetTemplate = () => {
   commandOutput.value = '';
 };
 
-onMounted(async () => {
+const loadFavTemplates = async () => {
   try {
     const result = await ListFavTemplates();
     favTemplates.value = result || [];
   } catch (error) {
     console.error('Failed to list favorite templates:', error);
   }
+};
+
+onMounted(async () => {
+  await loadFavTemplates();
 });
 </script>
 
@@ -68,7 +72,7 @@ onMounted(async () => {
             <Button @click="resetTemplate">Reset</Button>
 
             <TemplateManager v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
-              @reset-template="resetTemplate" :favTemplates="favTemplates" />
+              @reset-template="resetTemplate" :favTemplates="favTemplates" @fav-template-updated="loadFavTemplates" />
 
             <DynamicCommandForm v-if="templateData.name" :selectedCommand="selectedCommand"
               v-model:commandVariableValues="commandVariableValues" />

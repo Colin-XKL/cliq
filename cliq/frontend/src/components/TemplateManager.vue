@@ -32,6 +32,10 @@
           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
           URL导入
         </button>
+        <button @click="addTemplateToFavorites"
+          class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none">
+          收藏
+        </button>
       </div>
     </div>
     <p class="mb-6 text-gray-600">{{ templateData.description }}</p>
@@ -92,6 +96,7 @@ import { models } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
 import Listbox from 'primevue/listbox';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import { SaveFavTemplate } from '../../wailsjs/go/main/App';
 
 const props = defineProps({
   templateData: { type: Object as () => models.TemplateFile, required: true },
@@ -99,7 +104,7 @@ const props = defineProps({
   favTemplates: { type: Array as () => models.TemplateFile[], default: () => [] },
 });
 
-const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template']);
+const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template', 'fav-template-updated']);
 
 const { showToast } = useToastNotifications();
 
@@ -188,6 +193,22 @@ const loadFavTemplate = () => {
 const cancelUrlImport = () => {
   showUrlImportDialog.value = false;
   templateUrl.value = '';
+};
+
+const addTemplateToFavorites = async () => {
+  if (!templateDataInternal.value || !templateDataInternal.value.name) {
+    showToast('错误', '没有可收藏的模板', 'error');
+    return;
+  }
+
+  try {
+    await SaveFavTemplate(templateDataInternal.value);
+    showToast('成功', `模板 ${templateDataInternal.value.name} 已收藏`, 'success');
+    emit('fav-template-updated'); // Notify parent to refresh favorite templates
+  } catch (error) {
+    showToast('错误', `收藏模板失败: ${error}`, 'error');
+    console.error('收藏模板失败:', error);
+  }
 };
 
 </script>
