@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -204,4 +205,196 @@ func (fh *FileHandler) GetCommandText(template *models.TemplateFile, commandID s
 		return "", fmt.Errorf("获取命令文本失败: %w", err)
 	}
 	return strings.Join(parts, " "), nil
+}
+
+// getFavTemplatesDirPath 获取收藏模板的存储路径
+func (fh *FileHandler) getFavTemplatesDirPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("获取用户主目录失败: %w", err)
+	}
+	favTemplatesDir := filepath.Join(homeDir, ".config", "cliq", "fav_templates")
+	return favTemplatesDir, nil
+}
+
+// ensureFavTemplatesDirExists 确保收藏模板目录存在，如果不存在则创建
+func (fh *FileHandler) ensureFavTemplatesDirExists() (string, error) {
+	dirPath, err := fh.getFavTemplatesDirPath()
+	if err != nil {
+		return "", err
+	}
+
+	// 检查目录是否存在，如果不存在则创建
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		err = os.MkdirAll(dirPath, 0755)
+		if err != nil {
+			return "", fmt.Errorf("创建收藏模板目录失败: %w", err)
+		}
+	}
+
+	return dirPath, nil
+}
+
+// SaveFavTemplate 保存收藏模板文件
+func (fh *FileHandler) SaveFavTemplate(template *models.TemplateFile) error {
+	if template == nil {
+		return fmt.Errorf("模板不能为空")
+	}
+
+	// 确保收藏目录存在
+	dirPath, err := fh.ensureFavTemplatesDirExists()
+	if err != nil {
+		return err
+	}
+
+	// 使用模板的Name作为文件名，并添加.cliqfile.yaml后缀
+	fileName := fmt.Sprintf("%s.cliqfile.yaml", template.Name)
+	filePath := filepath.Join(dirPath, fileName)
+
+	// 序列化模板为YAML
+	data, err := yaml.Marshal(template)
+	if err != nil {
+		return fmt.Errorf("序列化模板失败: %w", err)
+	}
+
+	// 写入文件
+	err = os.WriteFile(filePath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("写入收藏模板文件失败: %w", err)
+	}
+
+	return nil
+}
+
+// ListFavTemplates 列出所有收藏的模板文件
+func (fh *FileHandler) ListFavTemplates() ([]*models.TemplateFile, error) {
+	dirPath, err := fh.ensureFavTemplatesDirExists()
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("读取收藏模板目录失败: %w", err)
+	}
+
+	var templates []*models.TemplateFile
+	for _, file := range files {
+		if !file.IsDir() && (strings.HasSuffix(file.Name(), ".cliqfile.yaml") || strings.HasSuffix(file.Name(), ".cliqfile.yml")) {
+			filePath := filepath.Join(dirPath, file.Name())
+			data, err := os.ReadFile(filePath)
+			if err != nil {
+				fmt.Printf("读取文件 %s 失败: %v\n", filePath, err)
+				continue
+			}
+
+			var template models.TemplateFile
+			err = yaml.Unmarshal(data, &template)
+			if err != nil {
+				fmt.Printf("解析文件 %s 失败: %v\n", filePath, err)
+				continue
+			}
+			templates = append(templates, &template)
+		}
+	}
+
+	return templates, nil
+}
+
+// DeleteFavTemplate 从收藏目录删除指定模板文件
+func (fh *FileHandler) DeleteFavTemplate(templateName string) error {
+	if templateName == "" {
+		return fmt.Errorf("模板名称不能为空")
+	}
+
+	dirPath, err := fh.getFavTemplatesDirPath()
+	if err != nil {
+		return err
+	}
+
+	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
+	filePath := filepath.Join(dirPath, fileName)
+
+	// 检查文件是否存在
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("模板文件不存在: %s", templateName)
+	}
+
+	// 删除文件
+	err = os.Remove(filePath)
+	if err != nil {
+		return fmt.Errorf("删除收藏模板文件失败: %w", err)
+	}
+
+	return nil
+}
+
+// GetFavTemplate 读取指定收藏模板文件内容
+func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile, error) {
+	if templateName == "" {
+		return nil, fmt.Errorf("模板名称不能为空")
+	}
+
+	dirPath, err := fh.getFavTemplatesDirPath()
+	if err != nil {
+		return nil, err
+	}
+
+	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
+	filePath := filepath.Join(dirPath, fileName)
+
+	// 检查文件是否存在
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("模板文件不存在: %s", templateName)
+	}
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("读取收藏模板文件失败: %w", err)
+	}
+
+	var template models.TemplateFile
+	err = yaml.Unmarshal(data, &template)
+	if err != nil {
+		return nil, fmt.Errorf("解析收藏模板文件失败: %w", err)
+	}
+
+	return &template, nil
+}
+
+// UpdateFavTemplate 更新指定收藏模板文件内容
+func (fh *FileHandler) UpdateFavTemplate(templateName string, updatedTemplate *models.TemplateFile) error {
+	if templateName == "" {
+		return fmt.Errorf("模板名称不能为空")
+	}
+	if updatedTemplate == nil {
+		return fmt.Errorf("更新模板不能为空")
+	}
+
+	dirPath, err := fh.getFavTemplatesDirPath()
+	if err != nil {
+		return err
+	}
+
+	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
+	filePath := filepath.Join(dirPath, fileName)
+
+	// 检查文件是否存在
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("模板文件不存在: %s", templateName)
+	}
+
+	// 序列化更新后的模板为YAML
+	data, err := yaml.Marshal(updatedTemplate)
+	if err != nil {
+		return fmt.Errorf("序列化更新模板失败: %w", err)
+	}
+
+	// 写入文件
+	err = os.WriteFile(filePath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("写入收藏模板文件失败: %w", err)
+	}
+
+	return nil
 }
