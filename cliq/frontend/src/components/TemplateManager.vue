@@ -12,6 +12,12 @@
         URL导入
       </button>
     </div>
+
+    <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
+      <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
+      <Listbox v-model="selectedFavTemplate" :options="favTemplates" optionLabel="name" 
+        class="w-full md:w-56 mx-auto" @change="loadFavTemplate" />
+    </div>
   </div>
 
   <div v-else>
@@ -82,13 +88,15 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 import { ImportTemplate, ImportTemplateFromURL } from '../../wailsjs/go/main/App';
-import { main } from '../../wailsjs/go/models';
+import { models } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
+import Listbox from 'primevue/listbox';
 import { useToastNotifications } from '../composables/useToastNotifications';
 
 const props = defineProps({
-  templateData: { type: Object as () => main.TemplateFile, required: true },
+  templateData: { type: Object as () => models.TemplateFile, required: true },
   selectedCommand: { type: Object as () => any, default: null },
+  favTemplates: { type: Array as () => models.TemplateFile[], default: () => [] },
 });
 
 const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template']);
@@ -99,6 +107,7 @@ const templateDataInternal = ref(props.templateData);
 const selectedCommandInternal = ref(props.selectedCommand);
 const showUrlImportDialog = ref(false);
 const templateUrl = ref('');
+const selectedFavTemplate = ref<models.TemplateFile | null>(null);
 
 watch(() => props.templateData, (newValue) => {
   templateDataInternal.value = newValue;
@@ -106,6 +115,12 @@ watch(() => props.templateData, (newValue) => {
 
 watch(() => props.selectedCommand, (newValue) => {
   selectedCommandInternal.value = newValue;
+});
+
+watch(() => props.favTemplates, (newValue) => {
+  if (newValue.length > 0 && !selectedFavTemplate.value) {
+    selectedFavTemplate.value = newValue[0];
+  }
 });
 
 watch(templateDataInternal, (newValue) => {
@@ -155,6 +170,18 @@ const importTemplateFromUrl = async () => {
   } catch (error) {
     showToast('错误', `从URL导入模板失败: ${error}`, 'error');
     console.error('从URL导入模板失败:', error);
+  }
+};
+
+const loadFavTemplate = () => {
+  if (selectedFavTemplate.value) {
+    emit('reset-template');
+    templateDataInternal.value = selectedFavTemplate.value;
+    selectedCommandInternal.value = null;
+    if (selectedFavTemplate.value.cmds && selectedFavTemplate.value.cmds.length > 0) {
+      selectedCommandInternal.value = selectedFavTemplate.value.cmds[0];
+    }
+    showToast('成功', `已加载收藏模板: ${selectedFavTemplate.value.name}`, 'success');
   }
 };
 

@@ -1,26 +1,38 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { main } from '../wailsjs/go/models';
+import { ref, onMounted } from 'vue';
+import { models } from '../wailsjs/go/models';
+import { ListFavTemplates } from '../wailsjs/go/main/App';
 import TemplateManager from './components/TemplateManager.vue';
 import DynamicCommandForm from './components/DynamicCommandForm.vue';
 import CommandExecutor from './components/CommandExecutor.vue';
 import TemplateGenerator from './components/TemplateGenerator.vue';
+import TemplateManagementPage from './components/TemplateManagementPage.vue';
 import Button from 'primevue/button';
 
-const templateData = ref<main.TemplateFile>({} as main.TemplateFile);
+const templateData = ref<models.TemplateFile>({} as models.TemplateFile);
 const selectedCommand = ref<any>(null);
 const commandVariableValues = ref<{ [key: string]: any }>({});
 const isProcessing = ref(false);
 const commandOutput = ref('');
-const currentView = ref<'main' | 'generator'>('main'); // Add view state
+const currentView = ref<'main' | 'generator' | 'template-management'>('main'); // Add view state
+const favTemplates = ref<models.TemplateFile[]>([]);
 
 const resetTemplate = () => {
-  templateData.value = {} as main.TemplateFile;
+  templateData.value = {} as models.TemplateFile;
   selectedCommand.value = null;
   commandVariableValues.value = {};
   isProcessing.value = false;
   commandOutput.value = '';
 };
+
+onMounted(async () => {
+  try {
+    const result = await ListFavTemplates();
+    favTemplates.value = result || [];
+  } catch (error) {
+    console.error('Failed to list favorite templates:', error);
+  }
+});
 </script>
 
 <template>
@@ -31,21 +43,21 @@ const resetTemplate = () => {
           <h1 class="text-4xl font-bold mt-4">cliQ</h1>
           <p class="text-xl mt-2">将复杂的 CLI 命令转化为直观、易用的图形用户界面</p>
         </div>
-        
+
         <!-- Navigation tabs -->
         <div class="flex justify-center mb-6">
           <div class="inline-flex bg-gray-100 rounded-lg p-1">
-            <button 
-              @click="currentView = 'main'"
-              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'main' ? 'bg-white shadow text-gray-900' : 'text-gray-600']"
-            >
+            <button @click="currentView = 'main'"
+              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'main' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
               主界面
             </button>
-            <button 
-              @click="currentView = 'generator'"
-              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'generator' ? 'bg-white shadow text-gray-900' : 'text-gray-600']"
-            >
+            <button @click="currentView = 'generator'"
+              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'generator' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
               模板生成器
+            </button>
+            <button @click="currentView = 'template-management'"
+              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'template-management' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
+              模板管理
             </button>
           </div>
         </div>
@@ -56,10 +68,10 @@ const resetTemplate = () => {
             <Button @click="resetTemplate">Reset</Button>
 
             <TemplateManager v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
-              @reset-template="resetTemplate" />
+              @reset-template="resetTemplate" :favTemplates="favTemplates" />
 
             <DynamicCommandForm v-if="templateData.name" :selectedCommand="selectedCommand"
-              v-model:commandVariableValues="commandVariableValues"/>
+              v-model:commandVariableValues="commandVariableValues" />
 
             <CommandExecutor v-if="templateData.name" :selectedCommand="selectedCommand"
               :commandVariableValues="commandVariableValues" v-model:isProcessing="isProcessing"
@@ -69,6 +81,11 @@ const resetTemplate = () => {
           <!-- Template Generator View -->
           <div v-if="currentView === 'generator'">
             <TemplateGenerator />
+          </div>
+
+          <!-- Template Management View -->
+          <div v-if="currentView === 'template-management'">
+            <TemplateManagementPage />
           </div>
         </div>
       </div>
