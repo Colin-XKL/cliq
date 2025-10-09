@@ -5,18 +5,24 @@
     <div class="flex justify-center gap-4">
       <button @click="importTemplate"
         class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
-        导入模板
+        从文件导入
       </button>
       <button @click="showUrlImportDialog = true"
         class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none text-lg">
-        URL导入
+        从URL导入
       </button>
     </div>
 
     <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
       <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
-      <Listbox v-model="selectedFavTemplate" :options="favTemplates" optionLabel="name" 
-        class="w-full md:w-56 mx-auto" @change="loadFavTemplate" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
+             @click="selectFavTemplate(template)"
+             class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100">
+          <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
+          <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -181,7 +187,7 @@ const importTemplateFromUrl = async () => {
 const loadFavTemplate = () => {
   if (selectedFavTemplate.value) {
     emit('reset-template');
-    templateDataInternal.value = selectedFavTemplate.value;
+    templateDataInternal.value = { ...selectedFavTemplate.value };
     selectedCommandInternal.value = null;
     if (selectedFavTemplate.value.cmds && selectedFavTemplate.value.cmds.length > 0) {
       selectedCommandInternal.value = selectedFavTemplate.value.cmds[0];
@@ -209,6 +215,11 @@ const addTemplateToFavorites = async () => {
     showToast('错误', `收藏模板失败: ${error}`, 'error');
     console.error('收藏模板失败:', error);
   }
+};
+
+const selectFavTemplate = (template: models.TemplateFile) => {
+  selectedFavTemplate.value = template;
+  loadFavTemplate();
 };
 
 </script>
