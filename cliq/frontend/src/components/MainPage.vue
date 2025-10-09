@@ -16,7 +16,8 @@
       <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
-          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100">
+          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+          @click="loadFavoriteTemplate(template.name)">
           <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
           <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
         </div>
@@ -95,7 +96,7 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { ImportTemplate, ImportTemplateFromURL } from '../../wailsjs/go/main/App';
+import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
 import { useToastNotifications } from '../composables/useToastNotifications';
@@ -194,6 +195,24 @@ const addTemplateToFavorites = async () => {
   } catch (error) {
     showToast('错误', `收藏模板失败: ${error}`, 'error');
     console.error('收藏模板失败:', error);
+  }
+};
+
+const loadFavoriteTemplate = async (templateName: string) => {
+  try {
+    emit('reset-template');
+    const result = await GetFavTemplate(templateName);
+    if (result) {
+      templateDataInternal.value = result;
+      selectedCommandInternal.value = null; // Reset selected command on new template import
+      if (result.cmds && result.cmds.length > 0) {
+        selectedCommandInternal.value = result.cmds[0];
+      }
+      showToast('成功', `模板 ${templateName} 加载成功`, 'success');
+    }
+  } catch (error) {
+    showToast('错误', `加载收藏模板失败: ${error}`, 'error');
+    console.error('加载收藏模板失败:', error);
   }
 };
 
