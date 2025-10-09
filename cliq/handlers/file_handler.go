@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"os"
 	"os/exec"
@@ -207,6 +208,12 @@ func (fh *FileHandler) GetCommandText(template *models.TemplateFile, commandID s
 	return strings.Join(parts, " "), nil
 }
 
+// getHashForTemplateName 生成基于模板名称的安全哈希值，防止路径遍历和特殊字符问题
+func getHashForTemplateName(templateName string) string {
+	hash := md5.Sum([]byte(templateName))
+	return fmt.Sprintf("%x", hash)
+}
+
 // getFavTemplatesDirPath 获取收藏模板的存储路径
 func (fh *FileHandler) getFavTemplatesDirPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
@@ -247,8 +254,9 @@ func (fh *FileHandler) SaveFavTemplate(template *models.TemplateFile) error {
 		return err
 	}
 
-	// 使用模板的Name作为文件名，并添加.cliqfile.yaml后缀
-	fileName := fmt.Sprintf("%s.cliqfile.yaml", template.Name)
+	// 使用模板名称的哈希值作为文件名，并添加.cliqfile.yaml后缀
+	hashedName := getHashForTemplateName(template.Name)
+	fileName := fmt.Sprintf("%s.cliqfile.yaml", hashedName)
 	filePath := filepath.Join(dirPath, fileName)
 
 	// 序列化模板为YAML
@@ -301,19 +309,60 @@ func (fh *FileHandler) ListFavTemplates() ([]*models.TemplateFile, error) {
 	return templates, nil
 }
 
+// isValidMD5Hash 验证字符串是否为有效的MD5哈希值格式
+func isValidMD5Hash(hash string) bool {
+	if len(hash) != 32 {
+		return false
+	}
+	
+	for _, c := range hash {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	
+	return true
+}
+
+// getFilePathForTemplate 根据模板名称获取文件路径，同时兼容新旧格式
+func (fh *FileHandler) getFilePathForTemplate(templateName string) (string, error) {
+	dirPath, err := fh.getFavTemplatesDirPath()
+	if err != nil {
+		return "", err
+	}
+	
+	// 尝试新格式（使用哈希值）
+	hashedName := getHashForTemplateName(templateName)
+	newFileName := fmt.Sprintf("%s.cliqfile.yaml", hashedName)
+	newFilePath := filepath.Join(dirPath, newFileName)
+	
+	// 检查新格式的文件是否存在
+	if _, err := os.Stat(newFilePath); err == nil {
+		return newFilePath, nil
+	}
+	
+	// 如果新格式不存在，检查旧格式的文件是否存在
+	oldFileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
+	oldFilePath := filepath.Join(dirPath, oldFileName)
+	
+	if _, err := os.Stat(oldFilePath); err == nil {
+		return oldFilePath, nil
+	}
+	
+	// 都不存在则返回新格式的路径（用于保存等操作）
+	return newFilePath, nil
+}
+
 // DeleteFavTemplate 从收藏目录删除指定模板文件
 func (fh *FileHandler) DeleteFavTemplate(templateName string) error {
 	if templateName == "" {
 		return fmt.Errorf("模板名称不能为空")
 	}
 
-	dirPath, err := fh.getFavTemplatesDirPath()
+	filePath, err := fh.getFilePathForTemplate(templateName)
 	if err != nil {
 		return err
 	}
-
-	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
-	filePath := filepath.Join(dirPath, fileName)
 
 	// 检查文件是否存在
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -335,13 +384,10 @@ func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile
 		return nil, fmt.Errorf("模板名称不能为空")
 	}
 
-	dirPath, err := fh.getFavTemplatesDirPath()
+	filePath, err := fh.getFilePathForTemplate(templateName)
 	if err != nil {
 		return nil, err
 	}
-
-	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
-	filePath := filepath.Join(dirPath, fileName)
 
 	// 检查文件是否存在
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -371,13 +417,10 @@ func (fh *FileHandler) UpdateFavTemplate(templateName string, updatedTemplate *m
 		return fmt.Errorf("更新模板不能为空")
 	}
 
-	dirPath, err := fh.getFavTemplatesDirPath()
+	filePath, err := fh.getFilePathForTemplate(templateName)
 	if err != nil {
 		return err
 	}
-
-	fileName := fmt.Sprintf("%s.cliqfile.yaml", templateName)
-	filePath := filepath.Join(dirPath, fileName)
 
 	// 检查文件是否存在
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
