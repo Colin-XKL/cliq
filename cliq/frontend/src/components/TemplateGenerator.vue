@@ -21,6 +21,7 @@
               <div class="flex gap-2">
                 <Button @click="copyToClipboard" label="复制" icon="pi pi-copy" size="small" />
                 <Button @click="exportTemplate" label="导出" icon="pi pi-download" />
+                <Button @click="saveToLocal" label="收藏保存" icon="pi pi-bookmark" />
                 <Button @click="validateTemplate" label="校验模板" size="large" />
               </div>
             </div>
@@ -62,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue';
-import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
+import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate, SaveFavTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import DynamicCommandForm from './DynamicCommandForm.vue';
 import { useToastNotifications } from '../composables/useToastNotifications';
@@ -175,6 +176,32 @@ const validateTemplate = async () => {
     await updatePreviewFromYaml();
   } catch (error) {
     showToast('错误', '模板格式无效: ' + error, 'error');
+  }
+};
+
+const saveToLocal = async () => {
+  if (!generatedYaml.value) {
+    showToast('错误', '没有可保存的模板', 'error');
+    return;
+  }
+
+  try {
+    // Parse the YAML back to a template object
+    const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
+    
+    // Ensure the template has a name for saving
+    if (!templateObj.name) {
+      // Generate a name based on the command if not provided
+      const commandName = commandInput.value.trim().split(' ')[0] || 'unnamed-template';
+      templateObj.name = `${commandName}-${Date.now()}`;
+    }
+    
+    // Save the template to local storage via backend
+    await SaveFavTemplate(templateObj);
+    showToast('成功', `模板 "${templateObj.name}" 已收藏保存`, 'success');
+  } catch (error) {
+    showToast('错误', '保存模板失败: ' + error, 'error');
+    console.error('保存模板失败:', error);
   }
 };
 
