@@ -74,3 +74,28 @@ func (a *App) ExportTemplateToFile(template *models.TemplateFile, filePath strin
 func (a *App) SaveYAMLToFile(yamlContent string) error {
 	return a.fileHandler.SaveYAMLToFile(yamlContent)
 }
+
+// SaveFavTemplate 将模板保存到收藏目录
+func (a *App) SaveFavTemplate(template *models.TemplateFile) error {
+	return a.fileHandler.SaveFavTemplate(template)
+}
+
+// ListFavTemplates 列出所有收藏的模板文件
+func (a *App) ListFavTemplates() ([]*models.TemplateFile, error) {
+	return a.fileHandler.ListFavTemplates()
+}
+
+// DeleteFavTemplate 从收藏目录删除指定模板文件
+func (a *App) DeleteFavTemplate(templateName string) error {
+	return a.fileHandler.DeleteFavTemplate(templateName)
+}
+
+// GetFavTemplate 读取指定收藏模板文件内容
+func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) {
+	return a.fileHandler.GetFavTemplate(templateName)
+}
+
+// UpdateFavTemplate 更新指定收藏模板文件内容
+func (a *App) UpdateFavTemplate(templateName string, updatedTemplate *models.TemplateFile) error {
+	return a.fileHandler.UpdateFavTemplate(templateName, updatedTemplate)
+}

@@ -1,22 +1,34 @@
 <template>
-  <div v-if="!templateData.name" class="text-center py-12">
+  <div v-if="!templateDataInternal.name" class="text-center py-12">
     <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
     <p class="text-gray-600 mb-8">请导入模板文件以开始使用</p>
     <div class="flex justify-center gap-4">
       <button @click="importTemplate"
         class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
-        导入模板
+        从文件导入
       </button>
       <button @click="showUrlImportDialog = true"
         class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none text-lg">
-        URL导入
+        从URL导入
       </button>
     </div>
+    <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
+      <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
+          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+          @click="loadFavoriteTemplate(template.name)">
+          <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
+          <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div v-else>
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-black">{{ templateData.name }}</h2>
+      <h2 class="text-2xl font-bold text-black">{{ templateDataInternal.name }}</h2>
       <div class="flex gap-2">
         <button @click="importTemplate"
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
@@ -26,19 +38,24 @@
           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
           URL导入
         </button>
+        <button @click="addTemplateToFavorites"
+          class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none">
+          收藏
+        </button>
       </div>
     </div>
-    <p class="mb-6 text-gray-600">{{ templateData.description }}</p>
+    <p class="mb-6 text-gray-600">{{ templateDataInternal.description }}</p>
 
     <!-- 模板信息显示 -->
     <div class="mb-6 p-4 bg-blue-50 rounded-md">
-      <p class="text-xs text-blue-500">作者: {{ templateData.author }} | 版本: {{ templateData.version }}</p>
+      <p class="text-xs text-blue-500">作者: {{ templateDataInternal.author }} | 版本: {{ templateDataInternal.version }}
+      </p>
     </div>
 
     <!-- 命令选择 -->
-    <div class="mb-6" v-if="templateData.cmds && templateData.cmds.length > 0">
+    <div class="mb-6" v-if="templateDataInternal.cmds && templateDataInternal.cmds.length > 0">
       <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
-      <Dropdown v-model="selectedCommandInternal" :options="templateData.cmds" optionLabel="name" class="w-full"
+      <Dropdown v-model="selectedCommandInternal" :options="templateDataInternal.cmds" optionLabel="name" class="w-full"
         placeholder="选择要执行的命令">
         <template #value="slotProps">
           <div class="flex align-items-center">
@@ -61,17 +78,15 @@
       <h3 class="text-lg font-semibold mb-4">从URL导入模板</h3>
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">模板URL</label>
-        <input v-model="templateUrl" type="text" 
+        <input v-model="templateUrl" type="text"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="https://example.com/template.cliqfile.yaml">
       </div>
       <div class="flex justify-end gap-2">
-        <button @click="cancelUrlImport" 
-          class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
+        <button @click="cancelUrlImport" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
           取消
         </button>
-        <button @click="importTemplateFromUrl" 
-          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+        <button @click="importTemplateFromUrl" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
           导入
         </button>
       </div>
@@ -81,17 +96,19 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { ImportTemplate, ImportTemplateFromURL } from '../../wailsjs/go/main/App';
-import { main } from '../../wailsjs/go/models';
+import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wailsjs/go/main/App';
+import { models } from '../../wailsjs/go/models';
 import Dropdown from 'primevue/dropdown';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import { SaveFavTemplate } from '../../wailsjs/go/main/App';
 
 const props = defineProps({
-  templateData: { type: Object as () => main.TemplateFile, required: true },
+  templateData: { type: Object as () => models.TemplateFile, required: true },
   selectedCommand: { type: Object as () => any, default: null },
+  favTemplates: { type: Array as () => models.TemplateFile[], default: () => [] },
 });
 
-const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template']);
+const emit = defineEmits(['update:templateData', 'update:selectedCommand', 'reset-template', 'fav-template-updated']);
 
 const { showToast } = useToastNotifications();
 
@@ -158,9 +175,47 @@ const importTemplateFromUrl = async () => {
   }
 };
 
+
+
 const cancelUrlImport = () => {
   showUrlImportDialog.value = false;
   templateUrl.value = '';
 };
+
+const addTemplateToFavorites = async () => {
+  if (!templateDataInternal.value || !templateDataInternal.value.name) {
+    showToast('错误', '没有可收藏的模板', 'error');
+    return;
+  }
+
+  try {
+    await SaveFavTemplate(templateDataInternal.value);
+    showToast('成功', `模板 ${templateDataInternal.value.name} 已收藏`, 'success');
+    emit('fav-template-updated'); // Notify parent to refresh favorite templates
+  } catch (error) {
+    showToast('错误', `收藏模板失败: ${error}`, 'error');
+    console.error('收藏模板失败:', error);
+  }
+};
+
+const loadFavoriteTemplate = async (templateName: string) => {
+  try {
+    const result = await GetFavTemplate(templateName);
+    if (result) {
+      emit('reset-template');
+      templateDataInternal.value = result;
+      selectedCommandInternal.value = null; // Reset selected command on new template import
+      if (result.cmds && result.cmds.length > 0) {
+        selectedCommandInternal.value = result.cmds[0];
+      }
+      showToast('成功', `模板 ${templateName} 加载成功`, 'success');
+    }
+  } catch (error) {
+    showToast('错误', `加载收藏模板失败: ${error}`, 'error');
+    console.error('加载收藏模板失败:', error);
+  }
+};
+
+
 
 </script>

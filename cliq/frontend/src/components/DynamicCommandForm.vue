@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
 import { OpenFileDialog, SaveFileDialog } from '../../wailsjs/go/main/App';
-import { main } from '../../wailsjs/go/models';
+import { models } from '../../wailsjs/go/models';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
@@ -73,7 +73,7 @@ const commandVariables = computed(() => {
   if (props.selectedCommand && props.selectedCommand.variables) {
     return Object.entries(props.selectedCommand.variables).map(([name, variable]) => ({
       name,
-      ...(variable as main.Variable),
+      ...(variable as models.Variable),
     }));
   }
   return [];
