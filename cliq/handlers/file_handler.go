@@ -257,11 +257,11 @@ func (fh *FileHandler) findTemplateFile(dirPath, hashedName, originalName string
 
 // getFavTemplatesDirPath 获取收藏模板的存储路径
 func (fh *FileHandler) getFavTemplatesDirPath() (string, error) {
-	homeDir, err := os.UserHomeDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", fmt.Errorf("获取用户主目录失败: %w", err)
+		return "", fmt.Errorf("获取用户配置目录失败: %w", err)
 	}
-	favTemplatesDir := filepath.Join(homeDir, ".config", "cliq", "fav_templates")
+	favTemplatesDir := filepath.Join(configDir, "cliq", "fav_templates")
 	return favTemplatesDir, nil
 }
 
