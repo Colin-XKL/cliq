@@ -200,9 +200,9 @@ const addTemplateToFavorites = async () => {
 
 const loadFavoriteTemplate = async (templateName: string) => {
   try {
-    emit('reset-template');
     const result = await GetFavTemplate(templateName);
     if (result) {
+      emit('reset-template');
       templateDataInternal.value = result;
       selectedCommandInternal.value = null; // Reset selected command on new template import
       if (result.cmds && result.cmds.length > 0) {
