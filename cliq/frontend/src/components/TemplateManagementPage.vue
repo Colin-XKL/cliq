@@ -1,8 +1,7 @@
 <template>
   <div class="p-4">
-    <h2 class="text-2xl font-bold mb-4">模板管理</h2>
     <div v-if="favTemplates.length === 0" class="text-center text-gray-500">
-      <p>暂无收藏模板。</p>
+      <p>暂无收藏模板</p>
     </div>
     <div v-else>
       <DataTable :value="favTemplates" responsiveLayout="scroll">

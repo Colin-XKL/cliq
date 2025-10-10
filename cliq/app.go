@@ -65,6 +65,11 @@ func (a *App) ValidateYAMLTemplate(yamlStr string) error {
 	return a.templateService.ValidateYAMLTemplate(yamlStr)
 }
 
+// ParseYAMLToTemplate 解析YAML字符串为模板对象
+func (a *App) ParseYAMLToTemplate(yamlStr string) (*models.TemplateFile, error) {
+	return a.templateService.ParseYAMLToTemplate(yamlStr)
+}
+
 // ExportTemplateToFile 将模板导出为文件
 func (a *App) ExportTemplateToFile(template *models.TemplateFile, filePath string) error {
 	return a.fileHandler.ExportTemplateToFile(template, filePath)

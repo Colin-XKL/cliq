@@ -24,6 +24,8 @@ export function OpenFileDialog():Promise<string>;
 
 export function ParseCommandToTemplate(arg1:string):Promise<models.TemplateFile>;
 
+export function ParseYAMLToTemplate(arg1:string):Promise<models.TemplateFile>;
+
 export function SaveFavTemplate(arg1:models.TemplateFile):Promise<void>;
 
 export function SaveFileDialog():Promise<string>;

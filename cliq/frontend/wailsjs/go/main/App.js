@@ -46,6 +46,10 @@ export function ParseCommandToTemplate(arg1) {
   return window['go']['main']['App']['ParseCommandToTemplate'](arg1);
 }
 
+export function ParseYAMLToTemplate(arg1) {
+  return window['go']['main']['App']['ParseYAMLToTemplate'](arg1);
+}
+
 export function SaveFavTemplate(arg1) {
   return window['go']['main']['App']['SaveFavTemplate'](arg1);
 }
