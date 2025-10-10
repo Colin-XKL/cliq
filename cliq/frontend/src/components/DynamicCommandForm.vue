@@ -26,7 +26,7 @@
         </button>
       </div>
       <!-- 下拉选择 -->
-      <Dropdown v-else-if="variable.type === 'select'" :id="variable.name"
+      <Select v-else-if="variable.type === 'select'" :id="variable.name"
         v-model="commandVariableValuesInternal[variable.name]" :options="Object.keys(variable.options || {})"
         class="w-full" :placeholder="variable.description" />
       <small v-if="variable.description" class="mt-1 text-sm text-gray-500">{{ variable.description }}</small>

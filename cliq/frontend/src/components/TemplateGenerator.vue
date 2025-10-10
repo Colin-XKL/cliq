@@ -16,15 +16,12 @@
       <div>
         <Card>
           <template #title>
+            <h2>生成的模板</h2>
             <div class="flex items-center justify-between">
-              <span>生成的模板</span>
               <div class="flex gap-2">
-                <Button @click="copyToClipboard" label="复制" icon="pi pi-copy" size="small"
-                  class="p-button-outlined p-button-secondary" />
-                <Button @click="exportTemplate" label="导出" icon="pi pi-download" size="small"
-                  class="p-button-outlined p-button-secondary" />
-                <Button @click="validateTemplate" label="校验模板" class="p-button-outlined p-button-secondary"
-                  size="small" />
+                <Button @click="copyToClipboard" label="复制" icon="pi pi-copy" size="small" />
+                <Button @click="exportTemplate" label="导出" icon="pi pi-download" />
+                <Button @click="validateTemplate" label="校验模板" size="large" />
               </div>
             </div>
           </template>
@@ -49,9 +46,7 @@
           <template #content>
             <div class="min-h-96 p-4 bg-gray-50 rounded-md">
               <div v-if="previewCommand" class="w-full">
-                <DynamicCommandForm 
-                  :selectedCommand="previewCommand" 
-                  :commandVariableValues="commandVariableValues"
+                <DynamicCommandForm :selectedCommand="previewCommand" :commandVariableValues="commandVariableValues"
                   @update:commandVariableValues="updateCommandVariableValues" />
               </div>
               <div v-else class="flex items-center justify-center h-64 text-gray-500">
@@ -69,9 +64,6 @@
 import { ref, reactive, watch } from 'vue';
 import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
 import DynamicCommandForm from './DynamicCommandForm.vue';
 import { useToastNotifications } from '../composables/useToastNotifications';
 
@@ -80,7 +72,7 @@ const { showToast } = useToastNotifications();
 const commandInput = ref('');
 const generatedYaml = ref('');
 const previewCommand = ref<any>(null);
-const commandVariableValues = reactive<{[key: string]: any}>({});
+const commandVariableValues = reactive<{ [key: string]: any }>({});
 
 const generateTemplate = async () => {
   if (!commandInput.value.trim()) {
@@ -98,7 +90,7 @@ const generateTemplate = async () => {
 
       // 更新预览区域
       updatePreview(templateObj);
-      
+
       showToast('成功', '模板生成成功', 'success');
     }
   } catch (error) {
@@ -111,7 +103,7 @@ const updatePreview = async (templateObj: models.TemplateFile) => {
   if (templateObj && templateObj.cmds && templateObj.cmds.length > 0) {
     // Use the first command for preview
     previewCommand.value = templateObj.cmds[0];
-    
+
     // Initialize command variable values
     if (previewCommand.value.variables) {
       Object.keys(previewCommand.value.variables).forEach(key => {
@@ -178,7 +170,7 @@ const validateTemplate = async () => {
   try {
     await ValidateYAMLTemplate(generatedYaml.value);
     showToast('成功', '模板格式有效', 'success');
-    
+
     // Update preview after validation since it's a valid template
     await updatePreviewFromYaml();
   } catch (error) {
