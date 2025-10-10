@@ -28,10 +28,24 @@
             </div>
           </template>
           <template #content>
-            <div class="min-h-96">
-              <textarea v-model="generatedYaml"
-                class="w-full h-full p-4 font-mono text-sm border border-gray-300 rounded-md resize-none"
-                placeholder="生成的模板将显示在这里"></textarea>
+            <div class="w-full h-96 border border-gray-300 rounded-md">
+              <MonacoEditor
+                :value="generatedYaml"
+                :key="editorKey"
+                language="yaml"
+                :height="384"
+                theme="vs"
+                :options="{
+                  minimap: { enabled: true },
+                  automaticLayout: true,
+                  fontSize: 14,
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  formatOnType: true,
+                  formatOnPaste: true,
+                  readOnly: false
+                }"
+                @change="onEditorChange" />
             </div>
           </template>
         </Card>
@@ -67,16 +81,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, nextTick } from 'vue';
 import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate, SaveFavTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import DynamicCommandForm from './DynamicCommandForm.vue';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import MonacoEditor from 'monaco-editor-vue3';
 
 const { showToast } = useToastNotifications();
 
 const commandInput = ref('');
 const generatedYaml = ref('');
+const editorKey = ref(0); // Key to control Monaco Editor refresh
 const previewCommand = ref<any>(null);
 const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
@@ -232,7 +248,7 @@ const previewForm = async () => {
     // If validation passes, update the preview
     const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
     updatePreview(templateObj);
-    hasValidationError.value = false; // Clear any previous validation errors
+    hasValidationError.value = false; // Clear any validation errors
     
     showToast('成功', '模板预览已更新', 'success');
   } catch (error) {
@@ -244,8 +260,28 @@ const previewForm = async () => {
   }
 };
 
+// Track if the change is coming from the editor to avoid infinite loops
+let isUpdatingFromEditor = false;
+
+const onEditorChange = (value: string) => {
+  isUpdatingFromEditor = true;
+  generatedYaml.value = value;
+  // The watch handler will take care of the preview update
+};
+
 // Watch for changes in generatedYaml and update preview accordingly
 watch(generatedYaml, async (newYaml) => {
+  if (!isUpdatingFromEditor) {
+    // This means the value was updated from outside the editor
+    // Force refresh the editor by updating the key
+    editorKey.value += 1;
+  } else {
+    // Reset the flag after delay to ensure the editor state is stable
+    setTimeout(() => {
+      isUpdatingFromEditor = false;
+    }, 0);
+  }
+  
   if (newYaml) {
     await updatePreviewFromYaml();
   } else {
