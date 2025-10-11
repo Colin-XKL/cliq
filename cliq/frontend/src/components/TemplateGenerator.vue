@@ -276,10 +276,10 @@ watch(generatedYaml, async (newYaml) => {
     // Force refresh the editor by updating the key
     editorKey.value += 1;
   } else {
-    // Reset the flag after delay to ensure the editor state is stable
-    setTimeout(() => {
+    // Reset the flag after the next DOM update cycle
+    nextTick(() => {
       isUpdatingFromEditor = false;
-    }, 0);
+    });
   }
   
   if (newYaml) {
