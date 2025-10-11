@@ -16,6 +16,7 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     MainPage: typeof import('./src/components/MainPage.vue')['default']
     Select: typeof import('primevue/select')['default']
+    TemplateEditorModal: typeof import('./src/components/TemplateEditorModal.vue')['default']
     TemplateGenerator: typeof import('./src/components/TemplateGenerator.vue')['default']
     TemplateManagementPage: typeof import('./src/components/TemplateManagementPage.vue')['default']
     Toast: typeof import('primevue/toast')['default']
