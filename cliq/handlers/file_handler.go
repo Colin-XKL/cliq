@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"cliq/models"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -111,7 +112,7 @@ func (fh *FileHandler) ExportTemplateToFile(template *models.TemplateFile, fileP
 	if template == nil {
 		return fmt.Errorf("模板不能为空")
 	}
-	
+
 	if filePath == "" {
 		return fmt.Errorf("文件路径不能为空")
 	}
@@ -333,7 +334,7 @@ func (fh *FileHandler) ListFavTemplates() ([]*models.TemplateFile, error) {
 			// 验证文件名是否是MD5哈希格式 (32位十六进制字符) + 后缀
 			filename := file.Name()
 			var isHashFormat bool
-			
+
 			if strings.HasSuffix(filename, ".cliqfile.yaml") {
 				namePart := strings.TrimSuffix(filename, ".cliqfile.yaml")
 				isHashFormat = isValidMD5Hash(namePart)
@@ -341,7 +342,7 @@ func (fh *FileHandler) ListFavTemplates() ([]*models.TemplateFile, error) {
 				namePart := strings.TrimSuffix(filename, ".cliqfile.yml")
 				isHashFormat = isValidMD5Hash(namePart)
 			}
-			
+
 			// 只处理符合哈希格式的文件
 			if isHashFormat {
 				filePath := filepath.Join(dirPath, file.Name())
@@ -370,13 +371,13 @@ func isValidMD5Hash(hash string) bool {
 	if len(hash) != 32 {
 		return false
 	}
-	
+
 	for _, c := range hash {
 		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -386,9 +387,9 @@ func (fh *FileHandler) getFilePathForTemplate(templateName string) (string, erro
 	if err != nil {
 		return "", err
 	}
-	
+
 	hashedName := getHashForTemplateName(templateName)
-	
+
 	// 使用新的查找函数
 	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
 	if err != nil && os.IsNotExist(err) {
@@ -396,7 +397,7 @@ func (fh *FileHandler) getFilePathForTemplate(templateName string) (string, erro
 		defaultFileName := fmt.Sprintf("%s.cliqfile.yaml", hashedName)
 		return filepath.Join(dirPath, defaultFileName), nil
 	}
-	
+
 	return filePath, err
 }
 
@@ -410,9 +411,9 @@ func (fh *FileHandler) DeleteFavTemplate(templateName string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	hashedName := getHashForTemplateName(templateName)
-	
+
 	// 先尝试查找存在的文件
 	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
 	if err != nil {
@@ -443,9 +444,9 @@ func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile
 	if err != nil {
 		return nil, err
 	}
-	
+
 	hashedName := getHashForTemplateName(templateName)
-	
+
 	// 查找存在的文件
 	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
 	if err != nil {
@@ -484,9 +485,9 @@ func (fh *FileHandler) UpdateFavTemplate(templateName string, updatedTemplate *m
 	if err != nil {
 		return err
 	}
-	
+
 	hashedName := getHashForTemplateName(templateName)
-	
+
 	// 查找存在的文件
 	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
 	if err != nil {
