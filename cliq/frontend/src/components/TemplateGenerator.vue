@@ -21,15 +21,31 @@
               <div class="flex gap-2">
                 <Button @click="copyToClipboard" label="复制" icon="pi pi-copy" size="small" />
                 <Button @click="exportTemplate" label="导出" icon="pi pi-download" />
+                <Button @click="saveToLocal" label="收藏保存" icon="pi pi-bookmark" />
+                <Button @click="previewForm" label="预览表单" icon="pi pi-eye" />
                 <Button @click="validateTemplate" label="校验模板" size="large" />
               </div>
             </div>
           </template>
           <template #content>
-            <div class="min-h-96">
-              <textarea v-model="generatedYaml"
-                class="w-full h-full p-4 font-mono text-sm border border-gray-300 rounded-md resize-none text-gray-400"
-                readonly placeholder="生成的模板将显示在这里"></textarea>
+            <div class="w-full h-96 border border-gray-300 rounded-md">
+              <MonacoEditor
+                :value="generatedYaml"
+                :key="editorKey"
+                language="yaml"
+                :height="384"
+                theme="vs"
+                :options="{
+                  minimap: { enabled: true },
+                  automaticLayout: true,
+                  fontSize: 14,
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  formatOnType: true,
+                  formatOnPaste: true,
+                  readOnly: false
+                }"
+                @change="onEditorChange" />
             </div>
           </template>
         </Card>
@@ -49,6 +65,10 @@
                 <DynamicCommandForm :selectedCommand="previewCommand" :commandVariableValues="commandVariableValues"
                   @update:commandVariableValues="updateCommandVariableValues" />
               </div>
+              <div v-else-if="hasValidationError" class="flex flex-col items-center justify-center h-64 text-red-500">
+                <i class="pi pi-exclamation-triangle text-4xl mb-3"></i>
+                <p>模板格式无效，请检查YAML语法</p>
+              </div>
               <div v-else class="flex items-center justify-center h-64 text-gray-500">
                 <p>生成模板后将显示表单预览</p>
               </div>
@@ -61,17 +81,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
-import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
+import { ref, reactive, watch, nextTick } from 'vue';
+import { ParseCommandToTemplate, GenerateYAMLFromTemplate, ValidateYAMLTemplate, SaveYAMLToFile, ParseYAMLToTemplate, SaveFavTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import DynamicCommandForm from './DynamicCommandForm.vue';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import MonacoEditor from 'monaco-editor-vue3';
 
 const { showToast } = useToastNotifications();
 
 const commandInput = ref('');
 const generatedYaml = ref('');
+const editorKey = ref(0); // Key to control Monaco Editor refresh
 const previewCommand = ref<any>(null);
+const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
 
 const generateTemplate = async () => {
@@ -90,6 +113,7 @@ const generateTemplate = async () => {
 
       // 更新预览区域
       updatePreview(templateObj);
+      hasValidationError.value = false; // Clear any validation errors
 
       showToast('成功', '模板生成成功', 'success');
     }
@@ -116,6 +140,7 @@ const updatePreview = async (templateObj: models.TemplateFile) => {
 const updatePreviewFromYaml = async () => {
   if (!generatedYaml.value) {
     previewCommand.value = null;
+    hasValidationError.value = false;
     return;
   }
 
@@ -123,9 +148,11 @@ const updatePreviewFromYaml = async () => {
     // Parse the YAML back to a template object for preview
     const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
     updatePreview(templateObj);
+    hasValidationError.value = false; // Clear any validation errors
   } catch (error) {
     console.error('解析YAML模板失败:', error);
     previewCommand.value = null;
+    hasValidationError.value = true; // Set validation error state
   }
 };
 
@@ -170,20 +197,96 @@ const validateTemplate = async () => {
   try {
     await ValidateYAMLTemplate(generatedYaml.value);
     showToast('成功', '模板格式有效', 'success');
+    hasValidationError.value = false; // Clear validation error state
 
     // Update preview after validation since it's a valid template
     await updatePreviewFromYaml();
   } catch (error) {
     showToast('错误', '模板格式无效: ' + error, 'error');
+    hasValidationError.value = true; // Set validation error state
   }
+};
+
+const saveToLocal = async () => {
+  if (!generatedYaml.value) {
+    showToast('错误', '没有可保存的模板', 'error');
+    return;
+  }
+
+  try {
+    // Parse the YAML back to a template object
+    const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
+    
+    // Ensure the template has a name for saving
+    if (!templateObj.name) {
+      // Generate a name based on the command if not provided
+      const commandName = commandInput.value.trim().split(' ')[0] || 'unnamed-template';
+      templateObj.name = `${commandName}-${Date.now()}`;
+    }
+    
+    // Save the template to local storage via backend
+    await SaveFavTemplate(templateObj);
+    showToast('成功', `模板 "${templateObj.name}" 已收藏保存`, 'success');
+  } catch (error) {
+    showToast('错误', '保存模板失败: ' + error, 'error');
+    console.error('保存模板失败:', error);
+  }
+};
+
+const previewForm = async () => {
+  if (!generatedYaml.value) {
+    showToast('错误', '没有可预览的模板', 'error');
+    previewCommand.value = null;
+    hasValidationError.value = false;
+    return;
+  }
+
+  try {
+    // Validate and parse the YAML to update preview
+    await ValidateYAMLTemplate(generatedYaml.value);
+    
+    // If validation passes, update the preview
+    const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
+    updatePreview(templateObj);
+    hasValidationError.value = false; // Clear any validation errors
+    
+    showToast('成功', '模板预览已更新', 'success');
+  } catch (error) {
+    // If validation fails, set preview to null to show error message
+    console.error('YAML validation failed:', error);
+    previewCommand.value = null;
+    hasValidationError.value = true; // Set validation error state
+    showToast('错误', '模板格式无效: ' + error, 'error');
+  }
+};
+
+// Track if the change is coming from the editor to avoid infinite loops
+let isUpdatingFromEditor = false;
+
+const onEditorChange = (value: string) => {
+  isUpdatingFromEditor = true;
+  generatedYaml.value = value;
+  // The watch handler will take care of the preview update
 };
 
 // Watch for changes in generatedYaml and update preview accordingly
 watch(generatedYaml, async (newYaml) => {
+  if (!isUpdatingFromEditor) {
+    // This means the value was updated from outside the editor
+    // Force refresh the editor by updating the key
+    editorKey.value += 1;
+  } else {
+    // Reset the flag after the next DOM update cycle
+    nextTick(() => {
+      isUpdatingFromEditor = false;
+    });
+  }
+  
   if (newYaml) {
     await updatePreviewFromYaml();
   } else {
     previewCommand.value = null;
+    hasValidationError.value = false;
   }
 });
 </script>
