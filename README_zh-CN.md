@@ -15,4 +15,4 @@ cliQ 是一个轻量级工具，旨在将复杂的 CLI 命令转化为直观、�
 ## 技术栈
 - 使用wails框架构建, 跨平台支持
 - 页面使用Vue3, 使用TypeScript
-- 使用PrimeVue组件库、Vite构建前端项目, 部分样式使用TailwindCSS
+- 使用PrimeVue V4组件库、Vite构建前端项目, 部分样式使用TailwindCSS

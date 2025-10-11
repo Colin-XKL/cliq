@@ -5,21 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "vite build"
   },
   "dependencies": {
+    "@primeuix/themes": "^1.2.5",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-vue": "^6.0.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "primeicons": "^7.0.0",
-    "primevue": "^3.53.1",
+    "primevue": "^4.4.1",
     "tailwindcss": "^4.1.14",
     "vue": "^3.2.37"
   },
   "devDependencies": {
     "@babel/types": "^7.18.10",
-    "typescript": "^4.6.4"
+    "@primevue/auto-import-resolver": "^4.4.1",
+    "typescript": "^4.6.4",
+    "unplugin-vue-components": "^29.1.0"
   }
 }

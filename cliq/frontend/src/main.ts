@@ -1,14 +1,20 @@
-import {createApp} from 'vue'
-import App from './App.vue'
-import './styles/global.css';
+import { createApp } from "vue";
+import App from "./App.vue";
+import "./styles/global.css";
 
 // PrimeVue
-import PrimeVue from 'primevue/config';
-import 'primevue/resources/themes/lara-light-blue/theme.css';
-import 'primeicons/primeicons.css';
-import PrimeComponents from './components/PrimeComponents';
+import PrimeVue from "primevue/config";
+import Aura from "@primeuix/themes/aura";
+import "primeicons/primeicons.css";
+
+import PrimeComponents from "./components/PrimeComponents";
 
 const app = createApp(App);
-app.use(PrimeVue);
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+  },
+});
+
 app.use(PrimeComponents);
-app.mount('#app');
+app.mount("#app");

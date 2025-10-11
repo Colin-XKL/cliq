@@ -110,6 +110,27 @@ func (ts *TemplateService) ValidateYAMLTemplate(yamlStr string) error {
 	return validateTemplate(&template)
 }
 
+// ParseYAMLToTemplate 解析YAML字符串为模板对象
+func (ts *TemplateService) ParseYAMLToTemplate(yamlStr string) (*models.TemplateFile, error) {
+	if yamlStr == "" {
+		return nil, fmt.Errorf("YAML字符串不能为空")
+	}
+
+	// 反序列化YAML到TemplateFile结构
+	var template models.TemplateFile
+	err := yaml.Unmarshal([]byte(yamlStr), &template)
+	if err != nil {
+		return nil, fmt.Errorf("YAML格式错误: %w", err)
+	}
+
+	// 验证模板结构
+	if err := validateTemplate(&template); err != nil {
+		return nil, fmt.Errorf("模板格式验证失败: %w", err)
+	}
+
+	return &template, nil
+}
+
 // extractVariablesFromCommand 从命令字符串中提取变量名
 func extractVariablesFromCommand(commandStr string) []string {
 	var variables []string

@@ -98,7 +98,6 @@
 import { ref, watch } from 'vue';
 import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
-import Dropdown from 'primevue/dropdown';
 import { useToastNotifications } from '../composables/useToastNotifications';
 import { SaveFavTemplate } from '../../wailsjs/go/main/App';
 

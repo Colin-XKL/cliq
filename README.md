@@ -15,4 +15,4 @@ Users only need to define a command template with variable placeholders, and the
 ## Tech Stack
 - Built with the wails framework for cross-platform support
 - Frontend uses Vue3 with TypeScript
-- Uses PrimeVue component library, Vite to build the frontend project, with TailwindCSS for some styling
+- Uses PrimeVue V4 component library, Vite to build the frontend project, with TailwindCSS for some styling
