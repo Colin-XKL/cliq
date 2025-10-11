@@ -19,6 +19,7 @@ declare module 'vue' {
     TemplateEditorModal: typeof import('./src/components/TemplateEditorModal.vue')['default']
     TemplateGenerator: typeof import('./src/components/TemplateGenerator.vue')['default']
     TemplateManagementPage: typeof import('./src/components/TemplateManagementPage.vue')['default']
+    TemplateMetadataDisplay: typeof import('./src/components/TemplateMetadataDisplay.vue')['default']
     Toast: typeof import('primevue/toast')['default']
   }
 }

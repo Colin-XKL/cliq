@@ -28,7 +28,6 @@
 
   <div v-else>
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-black">{{ templateDataInternal.name }}</h2>
       <div class="flex gap-2">
         <button @click="importTemplate"
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
@@ -44,13 +43,9 @@
         </button>
       </div>
     </div>
-    <p class="mb-6 text-gray-600">{{ templateDataInternal.description }}</p>
 
-    <!-- 模板信息显示 -->
-    <div class="mb-6 p-4 bg-blue-50 rounded-md">
-      <p class="text-xs text-blue-500">作者: {{ templateDataInternal.author }} | 版本: {{ templateDataInternal.version }}
-      </p>
-    </div>
+    <!-- 模板基本信息显示 -->
+    <TemplateMetadataDisplay :template="templateDataInternal" class="mb-6" />
 
     <!-- 命令选择 -->
     <div class="mb-6" v-if="templateDataInternal.cmds && templateDataInternal.cmds.length > 0">
@@ -100,6 +95,7 @@ import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wai
 import { models } from '../../wailsjs/go/models';
 import { useToastNotifications } from '../composables/useToastNotifications';
 import { SaveFavTemplate } from '../../wailsjs/go/main/App';
+import TemplateMetadataDisplay from './TemplateMetadataDisplay.vue';
 
 const props = defineProps({
   templateData: { type: Object as () => models.TemplateFile, required: true },

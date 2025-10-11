@@ -17,18 +17,16 @@
           <h2>生成的模板</h2>
           <div class="flex items-center justify-between">
             <div class="flex gap-2">
-              <Button @click="copyToClipboard" label="复制" icon="pi pi-copy" size="small" />
-              <Button @click="exportTemplate" label="导出" icon="pi pi-download" />
-              <Button @click="saveToLocal" label="收藏保存" icon="pi pi-bookmark" />
-              <Button @click="openTemplateEditor" label="编辑模板" icon="pi pi-pencil" />
+              <Button @click="copyToClipboard" severity="secondary" label="复制" icon="pi pi-copy" size="small" />
+              <Button @click="exportTemplate" severity="secondary" label="导出" icon="pi pi-download" size="small" />
+              <Button @click="saveToLocal" severity="secondary" label="收藏保存" icon="pi pi-bookmark" size="small" />
+              <Button @click="openTemplateEditor" severity="secondary" label="编辑模板" icon="pi pi-pencil" size="small" />
             </div>
           </div>
         </template>
         <template #content>
           <div class="w-full">
-            <textarea
-              v-model="generatedYaml"
-              readonly
+            <textarea v-model="generatedYaml" readonly
               class="w-full h-96 p-3 border border-gray-300 rounded-md font-mono text-sm resize-none"
               placeholder="生成的模板将显示在这里..."></textarea>
           </div>
@@ -37,10 +35,7 @@
     </div>
 
     <!-- Template Editor Modal -->
-    <TemplateEditorModal 
-      :visible="showEditorModal" 
-      :initialYaml="generatedYaml"
-      @close="showEditorModal = false"
+    <TemplateEditorModal :visible="showEditorModal" :initialYaml="generatedYaml" @close="showEditorModal = false"
       @save="onTemplateSaved" />
   </div>
 </template>
@@ -116,14 +111,14 @@ const saveToLocal = async () => {
   try {
     // Parse the YAML back to a template object
     const templateObj = await ParseYAMLToTemplate(generatedYaml.value);
-    
+
     // Ensure the template has a name for saving
     if (!templateObj.name) {
       // Generate a name based on the command if not provided
       const commandName = commandInput.value.trim().split(' ')[0] || 'unnamed-template';
       templateObj.name = `${commandName}-${Date.now()}`;
     }
-    
+
     // Save the template to local storage via backend
     await SaveFavTemplate(templateObj);
     showToast('成功', `模板 "${templateObj.name}" 已收藏保存`, 'success');

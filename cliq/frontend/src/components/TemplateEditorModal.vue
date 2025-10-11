@@ -35,6 +35,11 @@
           <div class="flex flex-col">
             <h4 class="text-lg font-medium mb-2">表单预览</h4>
             <div class="flex-grow p-4 bg-gray-50 rounded-md min-h-[400px]">
+              <!-- Template metadata display -->
+              <div class="mb-4" v-if="fullTemplateData">
+                <TemplateMetadataDisplay :template="fullTemplateData" />
+              </div>
+              
               <div v-if="previewCommand" class="w-full">
                 <DynamicCommandForm :selectedCommand="previewCommand" :commandVariableValues="commandVariableValues"
                   @update:commandVariableValues="updateCommandVariableValues" />
@@ -58,7 +63,9 @@
 import { ref, reactive, watch } from 'vue';
 import MonacoEditor from 'monaco-editor-vue3';
 import DynamicCommandForm from './DynamicCommandForm.vue';
+import TemplateMetadataDisplay from './TemplateMetadataDisplay.vue';
 import { ValidateYAMLTemplate, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
+import { models } from '../../wailsjs/go/models';
 import { useToastNotifications } from '../composables/useToastNotifications';
 
 const { showToast } = useToastNotifications();
@@ -78,6 +85,7 @@ const emit = defineEmits(['close', 'save']);
 const templateYaml = ref(props.initialYaml);
 const editorKey = ref(0);
 const previewCommand = ref<any>(null);
+const fullTemplateData = ref<models.TemplateFile | null>(null);
 const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
 
@@ -107,6 +115,7 @@ watch(templateYaml, async (newYaml) => {
     await updatePreviewFromYaml();
   } else {
     previewCommand.value = null;
+    fullTemplateData.value = null;
     hasValidationError.value = false;
   }
 });
@@ -117,7 +126,10 @@ watch(() => props.visible, (newVisible) => {
   }
 });
 
-const updatePreview = async (templateObj: any) => {
+const updatePreview = async (templateObj: models.TemplateFile) => {
+  // Store the full template data for metadata display
+  fullTemplateData.value = templateObj;
+  
   if (templateObj && templateObj.cmds && templateObj.cmds.length > 0) {
     // Use the first command for preview
     previewCommand.value = templateObj.cmds[0];
@@ -134,6 +146,7 @@ const updatePreview = async (templateObj: any) => {
 const updatePreviewFromYaml = async () => {
   if (!templateYaml.value) {
     previewCommand.value = null;
+    fullTemplateData.value = null;
     hasValidationError.value = false;
     return;
   }
@@ -146,6 +159,7 @@ const updatePreviewFromYaml = async () => {
   } catch (error) {
     console.error('解析YAML模板失败:', error);
     previewCommand.value = null;
+    fullTemplateData.value = null;
     hasValidationError.value = true; // Set validation error state
   }
 };
