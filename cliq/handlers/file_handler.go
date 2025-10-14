@@ -146,6 +146,12 @@ func getCommandParts(cmdTemplateStr string, variables map[string]interface{}) ([
 
 // ExecuteCommand executes a shell command with the given input and output file paths
 func (fh *FileHandler) ExecuteCommand(template *models.TemplateFile, commandID string, variables map[string]interface{}) (string, error) {
+	if template == nil {
+		return "", fmt.Errorf("template is nil")
+	}
+	if variables == nil {
+		variables = make(map[string]interface{})
+	}
 	// 根据 commandID 查找对应的命令
 	var selectedCommand models.Command
 	found := false
@@ -186,6 +192,12 @@ func (fh *FileHandler) ExecuteCommand(template *models.TemplateFile, commandID s
 }
 
 func (fh *FileHandler) GetCommandText(template *models.TemplateFile, commandID string, variables map[string]interface{}) (string, error) {
+	if template == nil {
+		return "", fmt.Errorf("template is nil")
+	}
+	if variables == nil {
+		variables = make(map[string]interface{})
+	}
 	var selectedCommand models.Command
 	found := false
 	for _, cmd := range template.Cmds {

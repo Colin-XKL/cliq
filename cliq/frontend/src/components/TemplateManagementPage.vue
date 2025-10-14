@@ -11,7 +11,6 @@
         <Column field="version" header="版本"></Column>
         <Column header="操作">
           <template #body="slotProps">
-            <Button icon="pi pi-eye" size="small" @click="viewTemplate(slotProps.data)" rounded variant="outlined" />
             <Button icon="pi pi-pencil" size="small" @click="editTemplate(slotProps.data)" rounded variant="outlined" />
             <Button icon="pi pi-trash" size="small" @click="confirmDeleteTemplate(slotProps.data)" rounded
               variant="outlined" />
@@ -31,15 +30,7 @@
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="displayViewDialog" :header="`预览模板: ${templateToView ? templateToView.name : ''}`"
-      :modal="true" :style="{ width: '50vw' }">
-      <div class="p-fluid">
-        <Textarea v-model="templateContentToView" rows="20" cols="30" readonly />
-      </div>
-      <template #footer>
-        <Button label="关闭" icon="pi pi-times" class="p-button-text" @click="displayViewDialog = false" />
-      </template>
-    </Dialog>
+
     
     <!-- Template Editor Modal -->
     <TemplateEditorModal 
@@ -58,16 +49,13 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import Textarea from 'primevue/textarea';
 import { useToastNotifications } from '../composables/useToastNotifications';
 import TemplateEditorModal from './TemplateEditorModal.vue';
 
 const favTemplates = ref<models.TemplateFile[]>([]);
 const displayConfirmation = ref(false);
 const templateToDelete = ref<models.TemplateFile | null>(null);
-const displayViewDialog = ref(false);
-const templateToView = ref<models.TemplateFile | null>(null);
-const templateContentToView = ref('');
+
 const showEditorModal = ref(false);
 const templateToEdit = ref<models.TemplateFile | null>(null);
 const templateToEditContent = ref('');
@@ -123,17 +111,7 @@ const editTemplate = async (template: models.TemplateFile) => {
   }
 };
 
-const viewTemplate = async (template: models.TemplateFile) => {
-  templateToView.value = template;
-  try {
-    const content = await GetFavTemplate(template.name);
-    templateContentToView.value = JSON.stringify(content, null, 2);
-    displayViewDialog.value = true;
-  } catch (error) {
-    console.error('Failed to get template content:', error);
-    showToast('错误', `获取模板内容失败: ${error}`, 'error');
-  }
-};
+
 
 const onTemplateEdited = async (updatedYaml: string) => {
   if (!templateToEdit.value) return;
