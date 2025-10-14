@@ -146,9 +146,9 @@ func getCommandParts(cmdTemplateStr string, variables map[string]interface{}) ([
 
 // ExecuteCommand executes a shell command with the given input and output file paths
 func (fh *FileHandler) ExecuteCommand(template *models.TemplateFile, commandID string, variables map[string]interface{}) (string, error) {
-	if template == nil {
-		return "", fmt.Errorf("template is nil")
-	}
+    if template == nil {
+        return "", fmt.Errorf("模板未加载")
+    }
 	if variables == nil {
 		variables = make(map[string]interface{})
 	}
