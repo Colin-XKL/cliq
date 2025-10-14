@@ -114,6 +114,6 @@ func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) 
 }
 
 // UpdateFavTemplate 更新指定收藏模板文件内容
-func (a *App) UpdateFavTemplate(templateName string, updatedTemplate *models.TemplateFile) error {
-	return a.fileHandler.UpdateFavTemplate(templateName, updatedTemplate)
+func (a *App) UpdateFavTemplate(oldTemplateName string, newTemplateName string, updatedTemplate *models.TemplateFile) error {
+	return a.fileHandler.UpdateFavTemplate(oldTemplateName, newTemplateName, updatedTemplate)
 }

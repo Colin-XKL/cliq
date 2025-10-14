@@ -18,7 +18,7 @@
           <div class="flex flex-col">
             <h4 class="text-lg font-medium mb-2">模板编辑</h4>
             <div class="flex-grow border border-gray-300 rounded-md">
-              <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" :height="400" theme="vs" :options="{
+              <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" theme="vs" :options="{
                 minimap: { enabled: false },
                 automaticLayout: true,
                 fontSize: 14,

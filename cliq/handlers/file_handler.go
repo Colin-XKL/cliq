@@ -485,9 +485,12 @@ func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile
 }
 
 // UpdateFavTemplate 更新指定收藏模板文件内容
-func (fh *FileHandler) UpdateFavTemplate(templateName string, updatedTemplate *models.TemplateFile) error {
-	if templateName == "" {
-		return fmt.Errorf("模板名称不能为空")
+func (fh *FileHandler) UpdateFavTemplate(oldTemplateName string, newTemplateName string, updatedTemplate *models.TemplateFile) error {
+	if oldTemplateName == "" {
+		return fmt.Errorf("原模板名称不能为空")
+	}
+	if newTemplateName == "" {
+		return fmt.Errorf("新模板名称不能为空")
 	}
 	if updatedTemplate == nil {
 		return fmt.Errorf("更新模板不能为空")
@@ -498,29 +501,57 @@ func (fh *FileHandler) UpdateFavTemplate(templateName string, updatedTemplate *m
 		return err
 	}
 
-	hashedName := getHashForTemplateName(templateName)
+	// 生成旧模板的哈希名称
+	oldHashedName := getHashForTemplateName(oldTemplateName)
 
-	// 查找存在的文件
-	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
+	// 查找旧模板文件
+	oldFilePath, err := fh.findTemplateFile(dirPath, oldHashedName, oldTemplateName)
 	if err != nil {
-		return fmt.Errorf("模板文件不存在: %s", templateName)
+		return fmt.Errorf("原模板文件不存在: %s", oldTemplateName)
 	}
 
-	// 检查文件是否存在
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return fmt.Errorf("模板文件不存在: %s", templateName)
+	// 检查旧文件是否存在
+	if _, err := os.Stat(oldFilePath); os.IsNotExist(err) {
+		return fmt.Errorf("原模板文件不存在: %s", oldTemplateName)
 	}
 
-	// 序列化更新后的模板为YAML
-	data, err := yaml.Marshal(updatedTemplate)
-	if err != nil {
-		return fmt.Errorf("序列化更新模板失败: %w", err)
-	}
+	// 如果模板名称发生变更，则删除旧文件并创建新文件
+	if oldTemplateName != newTemplateName {
+		// 删除旧文件
+		err = os.Remove(oldFilePath)
+		if err != nil {
+			return fmt.Errorf("删除原模板文件失败: %w", err)
+		}
 
-	// 写入文件
-	err = os.WriteFile(filePath, data, 0644)
-	if err != nil {
-		return fmt.Errorf("写入收藏模板文件失败: %w", err)
+		// 生成新模板的哈希名称和路径
+		newHashedName := getHashForTemplateName(newTemplateName)
+		newFileName := fmt.Sprintf("%s.cliqfile.yaml", newHashedName)
+		newFilePath := filepath.Join(dirPath, newFileName)
+
+		// 序列化更新后的模板为YAML
+		data, err := yaml.Marshal(updatedTemplate)
+		if err != nil {
+			return fmt.Errorf("序列化更新模板失败: %w", err)
+		}
+
+		// 写入新文件
+		err = os.WriteFile(newFilePath, data, 0644)
+		if err != nil {
+			return fmt.Errorf("写入新模板文件失败: %w", err)
+		}
+	} else {
+		// 名称未变更，直接更新原文件
+		// 序列化更新后的模板为YAML
+		data, err := yaml.Marshal(updatedTemplate)
+		if err != nil {
+			return fmt.Errorf("序列化更新模板失败: %w", err)
+		}
+
+		// 写入文件
+		err = os.WriteFile(oldFilePath, data, 0644)
+		if err != nil {
+			return fmt.Errorf("写入收藏模板文件失败: %w", err)
+		}
 	}
 
 	return nil

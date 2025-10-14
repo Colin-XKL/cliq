@@ -32,6 +32,6 @@ export function SaveFileDialog():Promise<string>;
 
 export function SaveYAMLToFile(arg1:string):Promise<void>;
 
-export function UpdateFavTemplate(arg1:string,arg2:models.TemplateFile):Promise<void>;
+export function UpdateFavTemplate(arg1:string,arg2:string,arg3:models.TemplateFile):Promise<void>;
 
 export function ValidateYAMLTemplate(arg1:string):Promise<void>;

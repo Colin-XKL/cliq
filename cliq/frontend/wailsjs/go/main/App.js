@@ -62,8 +62,8 @@ export function SaveYAMLToFile(arg1) {
   return window['go']['main']['App']['SaveYAMLToFile'](arg1);
 }
 
-export function UpdateFavTemplate(arg1, arg2) {
-  return window['go']['main']['App']['UpdateFavTemplate'](arg1, arg2);
+export function UpdateFavTemplate(arg1, arg2, arg3) {
+  return window['go']['main']['App']['UpdateFavTemplate'](arg1, arg2, arg3);
 }
 
 export function ValidateYAMLTemplate(arg1) {

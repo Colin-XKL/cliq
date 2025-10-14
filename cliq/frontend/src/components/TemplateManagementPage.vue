@@ -120,11 +120,8 @@ const onTemplateEdited = async (updatedYaml: string) => {
     // Parse the updated YAML back to a template object
     const updatedTemplate = await ParseYAMLToTemplate(updatedYaml);
     
-    // Update the template name to match the original (in case it was changed in the YAML)
-    updatedTemplate.name = templateToEdit.value.name;
-    
-    // Send the updated template to the backend
-    await UpdateFavTemplate(templateToEdit.value.name, updatedTemplate);
+    // Send the updated template to the backend with old and new names
+    await UpdateFavTemplate(templateToEdit.value.name, updatedTemplate.name, updatedTemplate);
     
     // Close the editor
     showEditorModal.value = false;
@@ -132,7 +129,7 @@ const onTemplateEdited = async (updatedYaml: string) => {
     // Reload the templates list
     await loadFavTemplates();
     
-    showToast('成功', `模板 ${templateToEdit.value.name} 已更新`, 'success');
+    showToast('成功', `模板 ${updatedTemplate.name} 已更新`, 'success');
   } catch (error) {
     console.error('Failed to update template:', error);
     showToast('错误', `更新模板失败: ${error}`, 'error');
