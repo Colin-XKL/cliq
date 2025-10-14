@@ -69,8 +69,6 @@ onMounted(async () => {
         <div class="bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[70vh]">
           <!-- Main View -->
           <div v-if="currentView === 'main'">
-            <Button @click="resetTemplate">Reset</Button>
-
             <MainPage v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
               @reset-template="resetTemplate" :favTemplates="favTemplates" @fav-template-updated="loadFavTemplates" />
 

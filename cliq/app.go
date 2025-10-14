@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"cliq/handlers"
 	"cliq/models"
@@ -43,10 +44,22 @@ func (a *App) SaveFileDialog() (string, error) {
 
 // ExecuteCommand executes a shell command with the given input and output file paths
 func (a *App) ExecuteCommand(commandID string, variables map[string]interface{}) (string, error) {
+    if a.fileHandler == nil {
+        return "", fmt.Errorf("fileHandler 未初始化")
+    }
+    if a.template == nil {
+        return "", fmt.Errorf("模板未加载")
+    }
 	return a.fileHandler.ExecuteCommand(a.template, commandID, variables)
 }
 
 func (a *App) GetCommandText(commandID string, variables map[string]interface{}) (string, error) {
+	if a.fileHandler == nil {
+		return "", fmt.Errorf("fileHandler is nil")
+	}
+	if a.template == nil {
+		return "", fmt.Errorf("template is nil")
+	}
 	return a.fileHandler.GetCommandText(a.template, commandID, variables)
 }
 

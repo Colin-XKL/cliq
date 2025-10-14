@@ -18,12 +18,11 @@
       <!-- 文件输入 -->
       <div v-else-if="variable.type === 'file_input' || variable.type === 'file_output'"
         class="flex items-center space-x-2">
-        <InputText :id="variable.name" v-model="commandVariableValuesInternal[variable.name]" class="w-full" readonly
+        <InputText :id="variable.name" v-model="commandVariableValuesInternal[variable.name]" readonly
           :placeholder="variable.description" />
-        <button type="button" @click="openFileSelection(variable.name, variable.type)"
-          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+        <Button type="button" @click="openFileSelection(variable.name, variable.type)" size="small">
           选择文件
-        </button>
+        </Button>
       </div>
       <!-- 下拉选择 -->
       <Select v-else-if="variable.type === 'select'" :id="variable.name"

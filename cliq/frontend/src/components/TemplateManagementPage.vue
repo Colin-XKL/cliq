@@ -11,7 +11,6 @@
         <Column field="version" header="版本"></Column>
         <Column header="操作">
           <template #body="slotProps">
-            <Button icon="pi pi-eye" size="small" @click="viewTemplate(slotProps.data)" rounded variant="outlined" />
             <Button icon="pi pi-pencil" size="small" @click="editTemplate(slotProps.data)" rounded variant="outlined" />
             <Button icon="pi pi-trash" size="small" @click="confirmDeleteTemplate(slotProps.data)" rounded
               variant="outlined" />
@@ -31,35 +30,35 @@
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="displayViewDialog" :header="`预览模板: ${templateToView ? templateToView.name : ''}`"
-      :modal="true" :style="{ width: '50vw' }">
-      <div class="p-fluid">
-        <Textarea v-model="templateContentToView" rows="20" cols="30" readonly />
-      </div>
-      <template #footer>
-        <Button label="关闭" icon="pi pi-times" class="p-button-text" @click="displayViewDialog = false" />
-      </template>
-    </Dialog>
+
+    
+    <!-- Template Editor Modal -->
+    <TemplateEditorModal 
+      :visible="showEditorModal" 
+      :initialYaml="templateToEditContent"
+      @close="showEditorModal = false"
+      @save="onTemplateEdited" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { models } from '../../wailsjs/go/models';
-import { ListFavTemplates, DeleteFavTemplate, GetFavTemplate } from '../../wailsjs/go/main/App';
+import { ListFavTemplates, DeleteFavTemplate, GetFavTemplate, UpdateFavTemplate, GenerateYAMLFromTemplate, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import Textarea from 'primevue/textarea';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import TemplateEditorModal from './TemplateEditorModal.vue';
 
 const favTemplates = ref<models.TemplateFile[]>([]);
 const displayConfirmation = ref(false);
 const templateToDelete = ref<models.TemplateFile | null>(null);
-const displayViewDialog = ref(false);
-const templateToView = ref<models.TemplateFile | null>(null);
-const templateContentToView = ref('');
+
+const showEditorModal = ref(false);
+const templateToEdit = ref<models.TemplateFile | null>(null);
+const templateToEditContent = ref('');
 const { showToast } = useToastNotifications();
 
 const loadFavTemplates = async () => {
@@ -92,20 +91,51 @@ const deleteTemplate = async () => {
   }
 };
 
-const editTemplate = (template: models.TemplateFile) => {
-  // TODO: Implement edit functionality
-  showToast('信息', `编辑模板 ${template.name} (功能待实现)`, 'info');
+const editTemplate = async (template: models.TemplateFile) => {
+  try {
+    // Get the full template content
+    const templateContent = await GetFavTemplate(template.name);
+    
+    // Convert the template object to YAML string
+    const yamlContent = await GenerateYAMLFromTemplate(templateContent);
+    
+    // Set the template to edit
+    templateToEdit.value = templateContent;
+    templateToEditContent.value = yamlContent;
+    
+    // Show the editor modal
+    showEditorModal.value = true;
+  } catch (error) {
+    console.error('Failed to load template for editing:', error);
+    showToast('错误', `加载模板进行编辑失败: ${error}`, 'error');
+  }
 };
 
-const viewTemplate = async (template: models.TemplateFile) => {
-  templateToView.value = template;
+
+
+const onTemplateEdited = async (updatedYaml: string) => {
+  if (!templateToEdit.value) return;
+  
   try {
-    const content = await GetFavTemplate(template.name);
-    templateContentToView.value = JSON.stringify(content, null, 2);
-    displayViewDialog.value = true;
+    // Parse the updated YAML back to a template object
+    const updatedTemplate = await ParseYAMLToTemplate(updatedYaml);
+    
+    // Update the template name to match the original (in case it was changed in the YAML)
+    updatedTemplate.name = templateToEdit.value.name;
+    
+    // Send the updated template to the backend
+    await UpdateFavTemplate(templateToEdit.value.name, updatedTemplate);
+    
+    // Close the editor
+    showEditorModal.value = false;
+    
+    // Reload the templates list
+    await loadFavTemplates();
+    
+    showToast('成功', `模板 ${templateToEdit.value.name} 已更新`, 'success');
   } catch (error) {
-    console.error('Failed to get template content:', error);
-    showToast('错误', `获取模板内容失败: ${error}`, 'error');
+    console.error('Failed to update template:', error);
+    showToast('错误', `更新模板失败: ${error}`, 'error');
   }
 };
 
