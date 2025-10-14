@@ -158,8 +158,19 @@ watch(templateYaml, async (newYaml) => {
 
 watch(() => props.visible, (newVisible) => {
   if (newVisible && props.initialYaml) {
-    // Reset to initial yaml when modal opens, but validation happens on setup
-    templateYaml.value = props.initialYaml;
+    // Check for unsaved edits before resetting templateYaml
+    if (templateYaml.value !== props.initialYaml) {
+      // Prompt user before discarding unsaved changes
+      const discard = window.confirm(
+        "You have unsaved changes. Do you want to discard them and reset to the initial template?"
+      );
+      if (discard) {
+        templateYaml.value = props.initialYaml;
+      }
+      // If not discarded, retain edits
+    } else {
+      templateYaml.value = props.initialYaml;
+    }
   }
 });
 
