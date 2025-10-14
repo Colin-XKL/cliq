@@ -32,24 +32,47 @@
           </div>
 
           <!-- 预览区域 -->
-          <div class="flex flex-col">
-            <h4 class="text-lg font-medium mb-2">表单预览</h4>
-            <div class="flex-grow p-4 bg-gray-50 rounded-md min-h-[400px]">
-              <!-- Template metadata display -->
-              <div class="mb-4" v-if="fullTemplateData">
-                <TemplateMetadataDisplay :template="fullTemplateData" />
-              </div>
-              
-              <div v-if="previewCommand" class="w-full">
-                <DynamicCommandForm :selectedCommand="previewCommand" :commandVariableValues="commandVariableValues"
-                  @update:commandVariableValues="updateCommandVariableValues" />
-              </div>
-              <div v-else-if="hasValidationError" class="flex flex-col items-center justify-center h-64 text-red-500">
-                <i class="pi pi-exclamation-triangle text-4xl mb-3"></i>
-                <p>模板格式无效，请检查YAML语法</p>
-              </div>
-              <div v-else class="flex items-center justify-center h-64 text-gray-500">
-                <p>校验模板后将显示表单预览</p>
+          <div class="flex flex-col ">
+            <div class="overflow-y-auto">
+              <h4 class="text-lg font-medium mb-2">表单预览</h4>
+              <div class="flex-grow p-4 bg-gray-50 rounded-md min-h-[400px]">
+                <!-- Template metadata display -->
+                <div class="mb-4" v-if="fullTemplateData">
+                  <TemplateMetadataDisplay :template="fullTemplateData" />
+                </div>
+
+                <!-- 命令选择下拉框 -->
+                <div class="mb-4" v-if="fullTemplateData && fullTemplateData.cmds && fullTemplateData.cmds.length > 0">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
+                  <Dropdown v-model="selectedPreviewCommand" :options="fullTemplateData.cmds" optionLabel="name"
+                    class="w-full" placeholder="选择要预览的命令">
+                    <template #value="slotProps">
+                      <div class="flex align-items-center">
+                        <div>{{ slotProps.value?.name || '选择命令' }}</div>
+                      </div>
+                    </template>
+                    <template #option="slotProps">
+                      <div class="flex flex-col text-left">
+                        <div>{{ slotProps.option.name }}</div>
+                        <small v-if="slotProps.option.description" class="text-gray-500">{{ slotProps.option.description
+                          }}</small>
+                      </div>
+                    </template>
+                  </Dropdown>
+                </div>
+
+                <div v-if="selectedPreviewCommand" class="w-full">
+                  <DynamicCommandForm :selectedCommand="selectedPreviewCommand"
+                    :commandVariableValues="commandVariableValues"
+                    @update:commandVariableValues="updateCommandVariableValues" />
+                </div>
+                <div v-else-if="hasValidationError" class="flex flex-col items-center justify-center h-64 text-red-500">
+                  <i class="pi pi-exclamation-triangle text-4xl mb-3"></i>
+                  <p>模板格式无效，请检查YAML语法</p>
+                </div>
+                <div v-else class="flex items-center justify-center h-64 text-gray-500">
+                  <p>校验模板后将显示表单预览</p>
+                </div>
               </div>
             </div>
           </div>
@@ -67,6 +90,7 @@ import TemplateMetadataDisplay from './TemplateMetadataDisplay.vue';
 import { ValidateYAMLTemplate, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import { useToastNotifications } from '../composables/useToastNotifications';
+import Dropdown from 'primevue/dropdown';
 
 const { showToast } = useToastNotifications();
 
@@ -86,8 +110,19 @@ const templateYaml = ref(props.initialYaml);
 const editorKey = ref(0);
 const previewCommand = ref<any>(null);
 const fullTemplateData = ref<models.TemplateFile | null>(null);
+const selectedPreviewCommand = ref<any>(null);
 const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
+
+// Auto-validate when component is initialized with a template
+const initializeValidation = async () => {
+  if (props.initialYaml) {
+    templateYaml.value = props.initialYaml;
+    await updatePreviewFromYaml();
+  }
+};
+// Initialize validation when component is set up
+initializeValidation();
 
 // Track if the change is coming from the editor to avoid infinite loops
 let isUpdatingFromEditor = false;
@@ -116,23 +151,46 @@ watch(templateYaml, async (newYaml) => {
   } else {
     previewCommand.value = null;
     fullTemplateData.value = null;
+    selectedPreviewCommand.value = null;
     hasValidationError.value = false;
   }
 });
 
 watch(() => props.visible, (newVisible) => {
   if (newVisible && props.initialYaml) {
+    // Reset to initial yaml when modal opens, but validation happens on setup
     templateYaml.value = props.initialYaml;
+  }
+});
+
+// Watch for changes in selectedPreviewCommand to update commandVariableValues
+watch(selectedPreviewCommand, (newCommand) => {
+  if (newCommand && newCommand.variables) {
+    // Clear the current commandVariableValues
+    Object.keys(commandVariableValues).forEach(key => {
+      delete commandVariableValues[key];
+    });
+
+    // Initialize command variable values for the selected command
+    Object.keys(newCommand.variables).forEach(key => {
+      commandVariableValues[key] = undefined; // Initialize with undefined
+    });
+  } else {
+    // If no command is selected, clear all variables
+    Object.keys(commandVariableValues).forEach(key => {
+      delete commandVariableValues[key];
+    });
   }
 });
 
 const updatePreview = async (templateObj: models.TemplateFile) => {
   // Store the full template data for metadata display
   fullTemplateData.value = templateObj;
-  
+
   if (templateObj && templateObj.cmds && templateObj.cmds.length > 0) {
-    // Use the first command for preview
+    // Use the first command for preview by default
     previewCommand.value = templateObj.cmds[0];
+    selectedPreviewCommand.value = templateObj.cmds[0];
 
     // Initialize command variable values
     if (previewCommand.value.variables) {
@@ -140,6 +198,10 @@ const updatePreview = async (templateObj: models.TemplateFile) => {
         commandVariableValues[key] = undefined; // Initialize with undefined
       });
     }
+  } else {
+    // Reset if there are no commands
+    previewCommand.value = null;
+    selectedPreviewCommand.value = null;
   }
 };
 
@@ -184,13 +246,17 @@ const validateTemplate = async () => {
   } catch (error) {
     showToast('错误', '模板格式无效: ' + error, 'error');
     hasValidationError.value = true; // Set validation error state
+    selectedPreviewCommand.value = null; // Reset selected command on validation error
   }
 };
+
+
 
 const previewForm = async () => {
   if (!templateYaml.value) {
     showToast('错误', '没有可预览的模板', 'error');
     previewCommand.value = null;
+    selectedPreviewCommand.value = null;
     hasValidationError.value = false;
     return;
   }
@@ -209,6 +275,7 @@ const previewForm = async () => {
     // If validation fails, set preview to null to show error message
     console.error('YAML validation failed:', error);
     previewCommand.value = null;
+    selectedPreviewCommand.value = null;
     hasValidationError.value = true; // Set validation error state
     showToast('错误', '模板格式无效: ' + error, 'error');
   }
