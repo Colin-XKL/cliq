@@ -7,14 +7,14 @@ import DynamicCommandForm from './components/DynamicCommandForm.vue';
 import CommandExecutor from './components/CommandExecutor.vue';
 import TemplateGenerator from './components/TemplateGenerator.vue';
 import TemplateManagementPage from './components/TemplateManagementPage.vue';
-import Button from 'primevue/button';
+import AboutPage from './components/AboutPage.vue';
 
 const templateData = ref<models.TemplateFile>({} as models.TemplateFile);
 const selectedCommand = ref<any>(null);
 const commandVariableValues = ref<{ [key: string]: any }>({});
 const isProcessing = ref(false);
 const commandOutput = ref('');
-const currentView = ref<'main' | 'generator' | 'template-management'>('main'); // Add view state
+const currentView = ref<'main' | 'generator' | 'template-management' | 'about'>('main'); // Add view state
 const favTemplates = ref<models.TemplateFile[]>([]);
 
 const resetTemplate = () => {
@@ -63,6 +63,10 @@ onMounted(async () => {
               :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'template-management' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
               模板管理
             </button>
+            <button @click="currentView = 'about'"
+              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'about' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
+              关于
+            </button>
           </div>
         </div>
 
@@ -88,6 +92,11 @@ onMounted(async () => {
           <!-- Template Management View -->
           <div v-if="currentView === 'template-management'">
             <TemplateManagementPage />
+          </div>
+          
+          <!-- About View -->
+          <div v-if="currentView === 'about'">
+            <AboutPage />
           </div>
         </div>
       </div>
