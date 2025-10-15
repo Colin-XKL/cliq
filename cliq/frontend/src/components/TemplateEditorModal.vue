@@ -9,7 +9,6 @@
       <div class="flex flex-col h-full">
         <div class="flex gap-4 mb-4">
           <Button @click="validateTemplate" label="校验模板" />
-          <Button @click="previewForm" label="预览表单" />
           <Button @click="applyChanges" label="应用更改" class="p-button-success" />
         </div>
 
@@ -18,7 +17,7 @@
           <div class="flex flex-col">
             <h4 class="text-lg font-medium mb-2">模板编辑</h4>
             <div class="flex-grow border border-gray-300 rounded-md">
-              <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" :height="400" theme="vs" :options="{
+              <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" theme="vs" :options="{
                 minimap: { enabled: false },
                 automaticLayout: true,
                 fontSize: 14,
@@ -263,34 +262,6 @@ const validateTemplate = async () => {
 
 
 
-const previewForm = async () => {
-  if (!templateYaml.value) {
-    showToast('错误', '没有可预览的模板', 'error');
-    previewCommand.value = null;
-    selectedPreviewCommand.value = null;
-    hasValidationError.value = false;
-    return;
-  }
-
-  try {
-    // Validate and parse the YAML to update preview
-    await ValidateYAMLTemplate(templateYaml.value);
-
-    // If validation passes, update the preview
-    const templateObj = await ParseYAMLToTemplate(templateYaml.value);
-    updatePreview(templateObj);
-    hasValidationError.value = false; // Clear any validation errors
-
-    showToast('成功', '模板预览已更新', 'success');
-  } catch (error) {
-    // If validation fails, set preview to null to show error message
-    console.error('YAML validation failed:', error);
-    previewCommand.value = null;
-    selectedPreviewCommand.value = null;
-    hasValidationError.value = true; // Set validation error state
-    showToast('错误', '模板格式无效: ' + error, 'error');
-  }
-};
 
 const applyChanges = () => {
   emit('save', templateYaml.value);
