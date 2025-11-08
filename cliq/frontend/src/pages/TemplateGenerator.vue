@@ -44,7 +44,7 @@
 import { ref } from 'vue';
 import { ParseCommandToTemplate, GenerateYAMLFromTemplate, SaveYAMLToFile, ParseYAMLToTemplate, SaveFavTemplate } from '../../wailsjs/go/main/App';
 import { useToastNotifications } from '../composables/useToastNotifications';
-import TemplateEditorModal from './TemplateEditorModal.vue';
+import TemplateEditorModal from '../components/TemplateEditorModal.vue';
 
 const { showToast } = useToastNotifications();
 

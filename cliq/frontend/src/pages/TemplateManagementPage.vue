@@ -45,7 +45,7 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { useToastNotifications } from '../composables/useToastNotifications';
-import TemplateEditorModal from './TemplateEditorModal.vue';
+import TemplateEditorModal from '../components/TemplateEditorModal.vue';
 
 const favTemplates = ref<models.TemplateFile[]>([]);
 const displayConfirmation = ref(false);

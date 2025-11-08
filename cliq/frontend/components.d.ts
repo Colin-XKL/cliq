@@ -8,7 +8,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AboutPage: typeof import('./src/components/AboutPage.vue')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
     CommandExecutor: typeof import('./src/components/CommandExecutor.vue')['default']
@@ -16,11 +15,8 @@ declare module 'vue' {
     DynamicCommandForm: typeof import('./src/components/DynamicCommandForm.vue')['default']
     FavoriteTemplateSelector: typeof import('./src/components/FavoriteTemplateSelector.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
-    MainPage: typeof import('./src/components/MainPage.vue')['default']
     Select: typeof import('primevue/select')['default']
     TemplateEditorModal: typeof import('./src/components/TemplateEditorModal.vue')['default']
-    TemplateGenerator: typeof import('./src/components/TemplateGenerator.vue')['default']
-    TemplateManagementPage: typeof import('./src/components/TemplateManagementPage.vue')['default']
     TemplateMetadataDisplay: typeof import('./src/components/TemplateMetadataDisplay.vue')['default']
     Toast: typeof import('primevue/toast')['default']
   }
