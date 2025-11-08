@@ -93,12 +93,26 @@ const deleteTemplate = async () => {
 
 const editTemplate = async (template: models.TemplateFile) => {
   try {
+    console.log('Attempting to edit template:', template.name);
+    
     // Get the full template content
     const templateContent = await GetFavTemplate(template.name);
-    
+    console.log('Retrieved template content:', templateContent);
+
+    if (!templateContent) {
+      showToast('错误', `未找到模板内容: ${template.name}`, 'error');
+      return;
+    }
+
     // Convert the template object to YAML string
     const yamlContent = await GenerateYAMLFromTemplate(templateContent);
-    
+    console.log('Generated YAML content:', yamlContent);
+
+    if (!yamlContent || yamlContent.trim() === '') {
+      showToast('错误', `模板内容为空: ${template.name}`, 'error');
+      return;
+    }
+
     // Set the template to edit
     templateToEdit.value = templateContent;
     templateToEditContent.value = yamlContent;

@@ -113,16 +113,6 @@ const selectedPreviewCommand = ref<any>(null);
 const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
 
-// Auto-validate when component is initialized with a template
-const initializeValidation = async () => {
-  if (props.initialYaml) {
-    templateYaml.value = props.initialYaml;
-    await updatePreviewFromYaml();
-  }
-};
-// Initialize validation when component is set up
-initializeValidation();
-
 // Track if the change is coming from the editor to avoid infinite loops
 let isUpdatingFromEditor = false;
 
@@ -155,21 +145,16 @@ watch(templateYaml, async (newYaml) => {
   }
 });
 
-watch(() => props.visible, (newVisible) => {
+watch(() => props.visible, async (newVisible) => {
   if (newVisible && props.initialYaml) {
-    // Check for unsaved edits before resetting templateYaml
-    if (templateYaml.value !== props.initialYaml) {
-      // Prompt user before discarding unsaved changes
-      const discard = window.confirm(
-        "You have unsaved changes. Do you want to discard them and reset to the initial template?"
-      );
-      if (discard) {
-        templateYaml.value = props.initialYaml;
-      }
-      // If not discarded, retain edits
-    } else {
-      templateYaml.value = props.initialYaml;
-    }
+    // Always reset to initialYaml when modal becomes visible
+    templateYaml.value = props.initialYaml;
+    // Force refresh the editor by updating the key to ensure Monaco picks up the value
+    editorKey.value += 1;
+    // Give Monaco a moment to reinitialize, then update the preview
+    setTimeout(async () => {
+      await updatePreviewFromYaml();
+    }, 100);
   }
 });
 
