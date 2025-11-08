@@ -10,5 +10,19 @@
   "author": {
     "name": "colin",
     "email": "Colin_XKL@outlook.com"
+  },
+  "info": {
+    "companyName": "ColinX Studio",
+    "productName": "cliQ",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright (c) 2018-2025 ColinX Studio. All rights reserved.",
+    "comments": "",
+    "protocols": [
+      {
+        "scheme": "cliq",
+        "description": "cliQ protocol",
+        "role": "Editor"
+      }
+    ]
   }
 }

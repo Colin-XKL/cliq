@@ -39,7 +39,7 @@ func (ts *TemplateService) ParseCommandToTemplate(commandStr string) (*models.Te
 				Name:        "Generated Command",
 				Description: "Automatically generated command",
 				Command:     commandStr,
-				Variables:   map[string]models.Variable{},
+				Variables:   []models.VariableDefinition{}, // Changed from map to array
 			},
 		},
 	}
@@ -47,7 +47,10 @@ func (ts *TemplateService) ParseCommandToTemplate(commandStr string) (*models.Te
 	// 为每个提取的变量创建适当的参数配置
 	for _, varName := range variables {
 		varType := determineVariableType(varName)
-		variable := models.Variable{
+		
+		// Create variable definition with simplified structure
+		varDef := models.VariableDefinition{
+			Name:        varName,
 			Type:        varType,
 			Label:       getLabelFromVariableName(varName),
 			Description: fmt.Sprintf("The %s parameter", varName),
@@ -57,22 +60,22 @@ func (ts *TemplateService) ParseCommandToTemplate(commandStr string) (*models.Te
 		// 根据变量类型设置特定选项
 		switch varType {
 		case models.VarTypeFileInput, models.VarTypeFileOutput:
-			variable.Options = map[string]interface{}{
+			varDef.Options = map[string]interface{}{
 				"file_types": []string{".*"}, // 默认支持所有文件类型
 			}
 		case models.VarTypeNumber:
-			variable.Options = map[string]interface{}{
+			varDef.Options = map[string]interface{}{
 				"default": 1,
 				"min":     0,
 				"max":     100,
 			}
 		case models.VarTypeBoolean:
-			variable.Options = map[string]interface{}{
+			varDef.Options = map[string]interface{}{
 				"default": false,
 			}
 		}
 
-		templateFile.Cmds[0].Variables[varName] = variable
+		templateFile.Cmds[0].Variables = append(templateFile.Cmds[0].Variables, varDef)
 	}
 
 	return templateFile, nil
@@ -113,8 +116,12 @@ func (ts *TemplateService) ValidateYAMLTemplate(yamlStr string) error {
 		return fmt.Errorf("YAML格式错误: %w", err)
 	}
 
-	// 验证模板结构
-	return validateTemplate(&template)
+	// 验证模板结构（包括变量名唯一性）
+	if err := validateTemplate(&template); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ParseYAMLToTemplate 解析YAML字符串为模板对象
@@ -130,7 +137,7 @@ func (ts *TemplateService) ParseYAMLToTemplate(yamlStr string) (*models.Template
 		return nil, fmt.Errorf("YAML格式错误: %w", err)
 	}
 
-	// 验证模板结构
+	// 验证模板结构（包括变量名唯一性）
 	if err := validateTemplate(&template); err != nil {
 		return nil, fmt.Errorf("模板格式验证失败: %w", err)
 	}
@@ -241,18 +248,32 @@ func validateTemplate(template *models.TemplateFile) error {
 		}
 
 		// 验证变量
-		for name, variable := range cmd.Variables {
-			if variable.Label == "" {
-				return fmt.Errorf("命令 #%d 变量 %s 的标签不能为空", i+1, name)
+		for j, varDef := range cmd.Variables {
+			if varDef.Name == "" {
+				return fmt.Errorf("命令 #%d 变量 #%d 名称不能为空", i+1, j+1)
+			}
+			if varDef.Label == "" {
+				return fmt.Errorf("命令 #%d 变量 %s 的标签不能为空", i+1, varDef.Name)
 			}
 
 			// 验证变量类型
-			switch variable.Type {
+			switch varDef.Type {
 			case models.VarTypeText, models.VarTypeFileInput, models.VarTypeFileOutput, models.VarTypeBoolean, models.VarTypeNumber, models.VarTypeSelect:
 				// 合法类型
 			default:
-				return fmt.Errorf("命令 #%d 变量 %s 的类型 %s 不支持", i+1, name, variable.Type)
+				return fmt.Errorf("命令 #%d 变量 %s 的类型 %s 不支持", i+1, varDef.Name, varDef.Type)
 			}
+		}
+	}
+
+	// 验证变量名唯一性
+	for i, cmd := range template.Cmds {
+		seen := make(map[string]bool)
+		for _, varDef := range cmd.Variables {
+			if seen[varDef.Name] {
+				return fmt.Errorf("命令 #%d 中存在重复变量名: %s", i+1, varDef.Name)
+			}
+			seen[varDef.Name] = true
 		}
 	}
 

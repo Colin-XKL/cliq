@@ -19,7 +19,8 @@ export namespace frontend {
 
 export namespace models {
 	
-	export class Variable {
+	export class VariableDefinition {
+	    name: string;
 	    type: string;
 	    arg_name?: string;
 	    label: string;
@@ -28,11 +29,12 @@ export namespace models {
 	    options?: Record<string, any>;
 	
 	    static createFrom(source: any = {}) {
-	        return new Variable(source);
+	        return new VariableDefinition(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
 	        this.type = source["type"];
 	        this.arg_name = source["arg_name"];
 	        this.label = source["label"];
@@ -46,7 +48,7 @@ export namespace models {
 	    name: string;
 	    description: string;
 	    command: string;
-	    variables: Record<string, Variable>;
+	    variables: VariableDefinition[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Command(source);
@@ -58,7 +60,7 @@ export namespace models {
 	        this.name = source["name"];
 	        this.description = source["description"];
 	        this.command = source["command"];
-	        this.variables = this.convertValues(source["variables"], Variable, true);
+	        this.variables = this.convertValues(source["variables"], VariableDefinition);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

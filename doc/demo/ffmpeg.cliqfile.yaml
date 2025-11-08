@@ -11,18 +11,18 @@ cmds:
     # 实际执行使用的命令模板, 使用golang的template
     command: "ffmpeg -i {{input_file}} -codec copy {{output_file}}"
 
-    # 变量定义（关键部分）
+    # 变量定义（关键部分） - 现在使用扁平化结构以保持顺序
     variables:
-      input_file:
+      - name: input_file
         type: file_input # 前端页面会根据type来选择不同的组件
         label: 输入文件
         description: 选择要转换的视频文件
         required: true
-        
-        options: # 将组件相关的非公共选项放在options下
+        # 将组件相关的非公共选项放在options下
+        options:
           file_types: [".mkv", ".mp4", ".avi", ".mov", ".wmv"]
 
-      output_file:
+      - name: output_file
         type: file_output
         label: 输出文件
         description: 选择转换后保存的位置和格式
@@ -30,13 +30,13 @@ cmds:
         options:
           file_types: [".mp4", ".mkv", ".avi", ".mov", ".webm"]
           default: "{{input_file}}_converted.mp4"  # 支持变量插值
-          
+
   - name: 提取音频
     description: 从视频文件中提取音频轨道
     command: "ffmpeg -i {{input_file}} -vn {{output_file}}"
 
     variables:
-      input_file:
+      - name: input_file
         type: file_input
         label: 输入视频
         description: 选择要提取音频的视频文件
@@ -44,7 +44,7 @@ cmds:
         options:
           file_types: [".mkv", ".mp4", ".avi", ".mov", ".wmv"]
 
-      output_file:
+      - name: output_file
         type: file_output
         label: 输出音频
         description: 选择音频保存的位置和格式
@@ -52,13 +52,13 @@ cmds:
         options:
           file_types: [".mp3", ".aac", ".wav", ".ogg", ".flac"]
           default: "{{input_file}}_audio.mp3"
-          
+
   - name: 限制文件大小
     description: 压缩视频使其不超过指定大小
     command: "ffmpeg -i {{input_file}} -fs {{max_size}}M {{output_file}}"
 
     variables:
-      input_file:
+      - name: input_file
         type: file_input
         label: 输入视频
         description: 选择要压缩的视频文件
@@ -66,7 +66,7 @@ cmds:
         options:
           file_types: [".mkv", ".mp4", ".avi", ".mov", ".wmv"]
 
-      max_size:
+      - name: max_size
         type: number
         label: 最大大小(MB)
         description: 设置输出文件的最大大小(MB)
@@ -76,7 +76,7 @@ cmds:
           min: 1
           max: 1000
 
-      output_file:
+      - name: output_file
         type: file_output
         label: 输出文件
         description: 选择压缩后视频保存的位置
@@ -84,13 +84,13 @@ cmds:
         options:
           file_types: [".mp4", ".mkv", ".avi"]
           default: "{{input_file}}_compressed.mp4"
-          
+
   - name: 调整分辨率
     description: 将视频调整为指定分辨率
     command: "ffmpeg -i {{input_file}} -vf scale={{width}}:{{height}} {{output_file}}"
 
     variables:
-      input_file:
+      - name: input_file
         type: file_input
         label: 输入视频
         description: 选择要调整分辨率的视频文件
@@ -98,7 +98,7 @@ cmds:
         options:
           file_types: [".mkv", ".mp4", ".avi", ".mov", ".wmv"]
 
-      width:
+      - name: width
         type: number
         label: 宽度
         description: 设置输出视频的宽度(像素)
@@ -108,7 +108,7 @@ cmds:
           min: 320
           max: 3840
 
-      height:
+      - name: height
         type: number
         label: 高度
         description: 设置输出视频的高度(像素)
@@ -118,7 +118,7 @@ cmds:
           min: 240
           max: 2160
 
-      output_file:
+      - name: output_file
         type: file_output
         label: 输出文件
         description: 选择调整分辨率后视频保存的位置
