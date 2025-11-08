@@ -6,17 +6,17 @@
         <Button @click="closeModal" label="关闭" class="p-button-secondary" />
       </div>
 
-      <div class="flex flex-col h-full">
+      <div class="flex flex-col flex-grow min-h-0">
         <div class="flex gap-4 mb-4">
           <Button @click="validateTemplate" label="校验模板" />
           <Button @click="applyChanges" label="应用更改" class="p-button-success" />
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <div class="flex flex-col lg:flex-row gap-6 flex-grow min-h-0">
           <!-- 编辑器区域 -->
-          <div class="flex flex-col">
+          <div class="flex flex-col flex-1 min-h-0">
             <h4 class="text-lg font-medium mb-2">模板编辑</h4>
-            <div class="flex-grow border border-gray-300 rounded-md">
+            <div class="flex-grow border border-gray-300 rounded-md overflow-y-auto">
               <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" theme="vs" :options="{
                 minimap: { enabled: false },
                 automaticLayout: true,
@@ -31,10 +31,9 @@
           </div>
 
           <!-- 预览区域 -->
-          <div class="flex flex-col ">
-            <div class="overflow-y-auto">
-              <h4 class="text-lg font-medium mb-2">表单预览</h4>
-              <div class="flex-grow p-4 bg-gray-50 rounded-md min-h-[400px]">
+          <div class="flex flex-col flex-1 min-h-0">
+            <h4 class="text-lg font-medium mb-2">表单预览</h4>
+            <div class="flex-grow p-4 bg-gray-50 rounded-md overflow-y-auto">
                 <!-- Template metadata display -->
                 <div class="mb-4" v-if="fullTemplateData">
                   <TemplateMetadataDisplay :template="fullTemplateData" />
@@ -72,7 +71,6 @@
                 <div v-else class="flex items-center justify-center h-64 text-gray-500">
                   <p>校验模板后将显示表单预览</p>
                 </div>
-              </div>
             </div>
           </div>
         </div>
