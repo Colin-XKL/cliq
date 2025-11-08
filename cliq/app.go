@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+
 	"cliq/handlers"
 	"cliq/models"
 	"cliq/services"
@@ -35,6 +37,11 @@ func (a *App) startup(ctx context.Context) {
 // OpenFileDialog opens a file dialog and returns the selected file path
 func (a *App) OpenFileDialog() (string, error) {
 	return a.fileHandler.OpenFileDialog()
+}
+
+// OpenFileDialogWithFilters opens a file dialog with specific file type filters and returns the selected file path
+func (a *App) OpenFileDialogWithFilters(filters []runtime.FileFilter) (string, error) {
+	return a.fileHandler.OpenFileDialogWithFilters(filters)
 }
 
 // SaveFileDialog opens a save file dialog and returns the selected file path
