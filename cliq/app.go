@@ -110,7 +110,16 @@ func (a *App) DeleteFavTemplate(templateName string) error {
 
 // GetFavTemplate 读取指定收藏模板文件内容
 func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) {
-	return a.fileHandler.GetFavTemplate(templateName)
+	template, err := a.fileHandler.GetFavTemplate(templateName)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Set the loaded template to the app's template field so that 
+	// commands like GetCommandText can access it.
+	a.template = template
+	
+	return template, nil
 }
 
 // UpdateFavTemplate 更新指定收藏模板文件内容
