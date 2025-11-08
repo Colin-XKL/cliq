@@ -15,15 +15,16 @@ type TemplateFile struct {
 
 // Command 表示一个命令模板
 type Command struct {
-	ID          string              `yaml:"id" json:"id"` // 添加 ID 字段
-	Name        string              `yaml:"name" json:"name"`
-	Description string              `yaml:"description" json:"description"`
-	Command     string              `yaml:"command" json:"command"`
-	Variables   map[string]Variable `yaml:"variables" json:"variables"`
+	ID          string               `yaml:"id" json:"id"` // 添加 ID 字段
+	Name        string               `yaml:"name" json:"name"`
+	Description string               `yaml:"description" json:"description"`
+	Command     string               `yaml:"command" json:"command"`
+	Variables   []VariableDefinition `yaml:"variables" json:"variables"` // Changed from map to array
 }
 
-// Variable 表示命令中的一个变量
-type Variable struct {
+// VariableDefinition 表示命令中的一个变量定义（扁平化结构）
+type VariableDefinition struct {
+	Name        string                 `yaml:"name" json:"name"`
 	Type        string                 `yaml:"type" json:"type"`
 	ArgName     string                 `yaml:"arg_name,omitempty" json:"arg_name,omitempty"`
 	Label       string                 `yaml:"label" json:"label"`

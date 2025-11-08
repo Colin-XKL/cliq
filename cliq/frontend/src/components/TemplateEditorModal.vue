@@ -165,9 +165,17 @@ watch(selectedPreviewCommand, (newCommand) => {
     });
 
     // Initialize command variable values for the selected command
-    Object.keys(newCommand.variables).forEach(key => {
-      commandVariableValues[key] = undefined; // Initialize with undefined
-    });
+    // Check if variables is an array of VariableDefinition objects (with flattened structure)
+    if (Array.isArray(newCommand.variables)) {
+      (newCommand.variables as models.VariableDefinition[]).forEach(varDef => {
+        commandVariableValues[varDef.name] = undefined; // Initialize with undefined
+      });
+    } else {
+      // Fallback for old map format
+      Object.keys(newCommand.variables).forEach(key => {
+        commandVariableValues[key] = undefined; // Initialize with undefined
+      });
+    }
   } else {
     // If no command is selected, clear all variables
     Object.keys(commandVariableValues).forEach(key => {
@@ -187,9 +195,17 @@ const updatePreview = async (templateObj: models.TemplateFile) => {
 
     // Initialize command variable values
     if (previewCommand.value.variables) {
-      Object.keys(previewCommand.value.variables).forEach(key => {
-        commandVariableValues[key] = undefined; // Initialize with undefined
-      });
+      // Check if variables is an array of VariableDefinition objects (with flattened structure)
+      if (Array.isArray(previewCommand.value.variables)) {
+        (previewCommand.value.variables as models.VariableDefinition[]).forEach(varDef => {
+          commandVariableValues[varDef.name] = undefined; // Initialize with undefined
+        });
+      } else {
+        // Fallback for old map format
+        Object.keys(previewCommand.value.variables).forEach(key => {
+          commandVariableValues[key] = undefined; // Initialize with undefined
+        });
+      }
     }
   } else {
     // Reset if there are no commands

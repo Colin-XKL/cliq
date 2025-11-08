@@ -69,10 +69,24 @@ watch(commandVariableValuesInternal, (newValue) => {
 
 const commandVariables = computed(() => {
   if (props.selectedCommand && props.selectedCommand.variables) {
-    return Object.entries(props.selectedCommand.variables).map(([name, variable]) => ({
-      name,
-      ...(variable as models.Variable),
-    }));
+    // If variables is an array of VariableDefinition objects (with flattened structure)
+    if (Array.isArray(props.selectedCommand.variables)) {
+      return props.selectedCommand.variables.map((varDef: models.VariableDefinition) => ({
+        name: varDef.name,
+        type: varDef.type,
+        arg_name: varDef.arg_name,
+        label: varDef.label,
+        description: varDef.description,
+        required: varDef.required,
+        options: varDef.options,
+      }));
+    } else {
+      // Fallback for old map format (for backward compatibility if needed)
+      return Object.entries(props.selectedCommand.variables).map(([name, variable]) => ({
+        name,
+        ...(variable as models.Variable),
+      }));
+    }
   }
   return [];
 });
@@ -80,17 +94,35 @@ const commandVariables = computed(() => {
 const openFileSelection = async (variableName: string, variableType: string) => {
   let filePath = '';
   try {
-    // Find the variable definition to get file type options
-    const variableDef = Object.entries(props.selectedCommand.variables || {})
-      .find(([name, _]) => name === variableName);
+    let variableDef: models.VariableDefinition | undefined;
     
+    // Find the variable in the array format
+    if (Array.isArray(props.selectedCommand.variables)) {
+      variableDef = (props.selectedCommand.variables as models.VariableDefinition[])
+        .find(v => v.name === variableName);
+    } else {
+      // Fallback for old map format
+      const varMap = props.selectedCommand.variables as Record<string, models.Variable>;
+      if (varMap && varMap[variableName]) {
+        const variable = varMap[variableName];
+        // Create a compatible structure for old format
+        variableDef = {
+          name: variableName,
+          type: variable.type,
+          arg_name: variable.arg_name,
+          label: variable.label,
+          description: variable.description,
+          required: variable.required,
+          options: variable.options,
+        } as models.VariableDefinition;
+      }
+    }
+
     if (variableDef) {
-      const [, variable] = variableDef as [string, models.Variable];
-      
       if (variableType === 'file_input') {
-        if (variable.options && variable.options.file_types) {
+        if (variableDef.options && variableDef.options.file_types) {
           // Use specific file type filters
-          filePath = await OpenFileDialogWithFilters(formatFileFilters(variable.options.file_types));
+          filePath = await OpenFileDialogWithFilters(formatFileFilters(variableDef.options.file_types));
         } else {
           // Fallback to all files
           filePath = await OpenFileDialog();
@@ -118,7 +150,7 @@ const openFileSelection = async (variableName: string, variableType: string) => 
         }
       }
     }
-    
+
     if (filePath) {
       commandVariableValuesInternal.value[variableName] = filePath;
     }
