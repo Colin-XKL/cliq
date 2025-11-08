@@ -19,8 +19,8 @@
       <div v-else-if="variable.type === 'file_input' || variable.type === 'file_output'"
         class="flex items-center space-x-2">
         <InputText :id="variable.name" v-model="commandVariableValuesInternal[variable.name]" readonly
-          :placeholder="variable.description" />
-        <Button type="button" @click="openFileSelection(variable.name, variable.type)" size="small">
+          :placeholder="variable.description" class="w-full" />
+        <Button type="button" @click="openFileSelection(variable.name, variable.type)" size="small" class="whitespace-nowrap">
           选择文件
         </Button>
       </div>
