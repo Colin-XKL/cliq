@@ -118,6 +118,30 @@ const selectedCommandInternal = ref(props.selectedCommand);
 const showUrlImportDialog = ref(false);
 const templateUrl = ref('');
 
+// Helper function to update template state consistently
+const updateTemplateState = (template: models.TemplateFile) => {
+  // Emit reset to clear any existing state in related components
+  emit('reset-template');
+
+  // Update internal state
+  templateDataInternal.value = template;
+  selectedCommandInternal.value = null; // Reset selected command on new template import
+  if (template.cmds && template.cmds.length > 0) {
+    selectedCommandInternal.value = template.cmds[0];
+  }
+
+  // Important: After parent state is reset, update it with the new template data
+  // This ensures that the parent's reactive system picks up the changes
+  emit('update:templateData', template);
+  emit('update:selectedCommand', selectedCommandInternal.value);
+
+  // Force next tick update to ensure all components re-render properly
+  // This ensures that child components like DynamicCommandForm get updated
+  setTimeout(() => {
+    // No additional action needed, the emits should handle the updates
+  }, 0);
+};
+
 watch(() => props.templateData, (newValue) => {
   templateDataInternal.value = newValue;
 });
@@ -203,27 +227,7 @@ const loadFavoriteTemplate = async (templateName: string) => {
   try {
     const result = await GetFavTemplate(templateName);
     if (result) {
-      // Emit reset to clear any existing state in related components
-      emit('reset-template');
-
-      // Update internal state
-      templateDataInternal.value = result;
-      selectedCommandInternal.value = null; // Reset selected command on new template import
-      if (result.cmds && result.cmds.length > 0) {
-        selectedCommandInternal.value = result.cmds[0];
-      }
-
-      // Important: After parent state is reset, update it with the new template data
-      // This ensures that the parent's reactive system picks up the changes
-      emit('update:templateData', result);
-      emit('update:selectedCommand', selectedCommandInternal.value);
-
-      // Force next tick update to ensure all components re-render properly
-      // This ensures that child components like DynamicCommandForm get updated
-      setTimeout(() => {
-        // No additional action needed, the emits should handle the updates
-      }, 0);
-
+      updateTemplateState(result);
       showToast('成功', `模板 ${templateName} 加载成功`, 'success');
     }
   } catch (error) {
@@ -234,20 +238,7 @@ const loadFavoriteTemplate = async (templateName: string) => {
 
 const handleTemplateSelected = (template: models.TemplateFile) => {
   try {
-    // Emit reset to clear any existing state in related components
-    emit('reset-template');
-
-    // Update internal state
-    templateDataInternal.value = template;
-    selectedCommandInternal.value = null; // Reset selected command on new template import
-    if (template.cmds && template.cmds.length > 0) {
-      selectedCommandInternal.value = template.cmds[0];
-    }
-
-    // Important: After parent state is reset, update it with the new template data
-    // This ensures that the parent's reactive system picks up the changes
-    emit('update:templateData', template);
-    emit('update:selectedCommand', selectedCommandInternal.value);
+    updateTemplateState(template);
   } catch (error) {
     showToast('错误', `处理收藏模板失败: ${error}`, 'error');
     console.error('处理收藏模板失败:', error);
