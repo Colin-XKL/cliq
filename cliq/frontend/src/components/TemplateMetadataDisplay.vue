@@ -1,5 +1,5 @@
 <template>
-  <div v-if="template" class="metadata-display p-4 bg-blue-50 rounded-md">
+  <div v-if="template" class="p-4 bg-blue-50 rounded-md">
     <div class="mb-2">
       <h3 v-if="template.name" class="text-lg font-bold text-gray-800">{{ template.name }}</h3>
       <p v-if="template.description" class="text-sm text-gray-600 mt-1">{{ template.description }}</p>
@@ -29,7 +29,4 @@ defineProps<Props>();
 </script>
 
 <style scoped>
-.metadata-display {
-  /* Additional styling can be added here if needed */
-}
 </style>

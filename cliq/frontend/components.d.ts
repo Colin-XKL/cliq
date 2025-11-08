@@ -14,6 +14,7 @@ declare module 'vue' {
     CommandExecutor: typeof import('./src/components/CommandExecutor.vue')['default']
     Dropdown: typeof import('primevue/dropdown')['default']
     DynamicCommandForm: typeof import('./src/components/DynamicCommandForm.vue')['default']
+    FavoriteTemplateSelector: typeof import('./src/components/FavoriteTemplateSelector.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
     MainPage: typeof import('./src/components/MainPage.vue')['default']
     Select: typeof import('primevue/select')['default']

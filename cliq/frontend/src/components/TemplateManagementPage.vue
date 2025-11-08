@@ -30,14 +30,9 @@
       </template>
     </Dialog>
 
-
-    
     <!-- Template Editor Modal -->
-    <TemplateEditorModal 
-      :visible="showEditorModal" 
-      :initialYaml="templateToEditContent"
-      @close="showEditorModal = false"
-      @save="onTemplateEdited" />
+    <TemplateEditorModal :visible="showEditorModal" :initialYaml="templateToEditContent"
+      @close="showEditorModal = false" @save="onTemplateEdited" />
   </div>
 </template>
 
@@ -94,7 +89,7 @@ const deleteTemplate = async () => {
 const editTemplate = async (template: models.TemplateFile) => {
   try {
     console.log('Attempting to edit template:', template.name);
-    
+
     // Get the full template content
     const templateContent = await GetFavTemplate(template.name);
     console.log('Retrieved template content:', templateContent);
@@ -116,7 +111,7 @@ const editTemplate = async (template: models.TemplateFile) => {
     // Set the template to edit
     templateToEdit.value = templateContent;
     templateToEditContent.value = yamlContent;
-    
+
     // Show the editor modal
     showEditorModal.value = true;
   } catch (error) {
@@ -129,20 +124,20 @@ const editTemplate = async (template: models.TemplateFile) => {
 
 const onTemplateEdited = async (updatedYaml: string) => {
   if (!templateToEdit.value) return;
-  
+
   try {
     // Parse the updated YAML back to a template object
     const updatedTemplate = await ParseYAMLToTemplate(updatedYaml);
-    
+
     // Send the updated template to the backend with old and new names
     await UpdateFavTemplate(templateToEdit.value.name, updatedTemplate.name, updatedTemplate);
-    
+
     // Close the editor
     showEditorModal.value = false;
-    
+
     // Reload the templates list
     await loadFavTemplates();
-    
+
     showToast('成功', `模板 ${updatedTemplate.name} 已更新`, 'success');
   } catch (error) {
     console.error('Failed to update template:', error);
