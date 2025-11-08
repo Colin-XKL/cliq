@@ -42,6 +42,10 @@ export function OpenFileDialog() {
   return window['go']['main']['App']['OpenFileDialog']();
 }
 
+export function OpenFileDialogWithFilters(arg1) {
+  return window['go']['main']['App']['OpenFileDialogWithFilters'](arg1);
+}
+
 export function ParseCommandToTemplate(arg1) {
   return window['go']['main']['App']['ParseCommandToTemplate'](arg1);
 }

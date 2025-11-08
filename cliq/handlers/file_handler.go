@@ -34,18 +34,35 @@ func (fh *FileHandler) Startup(ctx context.Context) {
 
 // OpenFileDialog opens a file dialog and returns the selected file path
 func (fh *FileHandler) OpenFileDialog() (string, error) {
+	// Default to all files if no specific filters are provided
 	options := runtime.OpenDialogOptions{
 		Title: "选择输入文件",
 		Filters: []runtime.FileFilter{
-			{
-				DisplayName: "PNG图片 (*.png)",
-				Pattern:     "*.png",
-			},
 			{
 				DisplayName: "所有文件 (*.*)",
 				Pattern:     "*.*",
 			},
 		},
+	}
+
+	return runtime.OpenFileDialog(fh.ctx, options)
+}
+
+// OpenFileDialogWithFilters opens a file dialog with specific file type filters and returns the selected file path
+func (fh *FileHandler) OpenFileDialogWithFilters(filters []runtime.FileFilter) (string, error) {
+	options := runtime.OpenDialogOptions{
+		Title:   "选择输入文件",
+		Filters: filters,
+	}
+
+	if len(filters) == 0 {
+		// If no filters are provided, default to all files
+		options.Filters = []runtime.FileFilter{
+			{
+				DisplayName: "所有文件 (*.*)",
+				Pattern:     "*.*",
+			},
+		}
 	}
 
 	return runtime.OpenFileDialog(fh.ctx, options)
@@ -57,11 +74,10 @@ func (fh *FileHandler) SaveFileDialog() (string, error) {
 		Title: "保存输出文件",
 		Filters: []runtime.FileFilter{
 			{
-				DisplayName: "PNG图片 (*.png)",
-				Pattern:     "*.png",
+				DisplayName: "所有文件 (*.*)",
+				Pattern:     "*.*",
 			},
 		},
-		DefaultFilename: "output.png",
 	}
 
 	return runtime.SaveFileDialog(fh.ctx, options)
@@ -146,9 +162,9 @@ func getCommandParts(cmdTemplateStr string, variables map[string]interface{}) ([
 
 // ExecuteCommand executes a shell command with the given input and output file paths
 func (fh *FileHandler) ExecuteCommand(template *models.TemplateFile, commandID string, variables map[string]interface{}) (string, error) {
-    if template == nil {
-        return "", fmt.Errorf("模板未加载")
-    }
+	if template == nil {
+		return "", fmt.Errorf("模板未加载")
+	}
 	if variables == nil {
 		variables = make(map[string]interface{})
 	}
@@ -263,9 +279,9 @@ func (fh *FileHandler) findTemplateFile(dirPath, hashedName, originalName string
 		}
 	}
 
-	// 如果两种格式都不存在，则返回哈希名称的第一个格式作为默认路径
-	defaultFileName := fmt.Sprintf("%s.cliqfile.yaml", hashedName)
-	return filepath.Join(dirPath, defaultFileName), os.ErrNotExist
+	// If we get here, the file was not found with either naming convention
+	// Return a proper error instead of a potential non-existent path with os.ErrNotExist
+	return "", fmt.Errorf("未找到模板文件 (哈希名: %s, 原始名: %s, 目录: %s)", hashedName, originalName, dirPath)
 }
 
 // getFavTemplatesDirPath 获取收藏模板的存储路径
@@ -454,7 +470,7 @@ func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile
 
 	dirPath, err := fh.getFavTemplatesDirPath()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("获取模板目录失败: %w", err)
 	}
 
 	hashedName := getHashForTemplateName(templateName)
@@ -462,23 +478,36 @@ func (fh *FileHandler) GetFavTemplate(templateName string) (*models.TemplateFile
 	// 查找存在的文件
 	filePath, err := fh.findTemplateFile(dirPath, hashedName, templateName)
 	if err != nil {
-		return nil, fmt.Errorf("模板文件不存在: %s", templateName)
+		return nil, fmt.Errorf("查找模板文件失败 (模板名: %s, 哈希: %s): %w", templateName, hashedName, err)
 	}
 
-	// 检查文件是否存在
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("模板文件不存在: %s", templateName)
+	// 检查文件是否存在 (this check is redundant since findTemplateFile already checks, but keeping for safety)
+	fileInfo, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		return nil, fmt.Errorf("模板文件不存在: %s (路径: %s)", templateName, filePath)
+	} else if err != nil {
+		return nil, fmt.Errorf("检查模板文件状态失败: %w", err)
+	}
+
+	// Check if file is empty
+	if fileInfo.Size() == 0 {
+		return nil, fmt.Errorf("模板文件为空: %s", filePath)
 	}
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("读取收藏模板文件失败: %w", err)
+		return nil, fmt.Errorf("读取收藏模板文件失败 (路径: %s): %w", filePath, err)
+	}
+
+	// Check if read data is empty
+	if len(data) == 0 {
+		return nil, fmt.Errorf("读取的模板内容为空: %s", filePath)
 	}
 
 	var template models.TemplateFile
 	err = yaml.Unmarshal(data, &template)
 	if err != nil {
-		return nil, fmt.Errorf("解析收藏模板文件失败: %w", err)
+		return nil, fmt.Errorf("解析收藏模板文件失败 (路径: %s): %w", filePath, err)
 	}
 
 	return &template, nil
@@ -507,7 +536,7 @@ func (fh *FileHandler) UpdateFavTemplate(oldTemplateName string, newTemplateName
 	// 查找旧模板文件
 	oldFilePath, err := fh.findTemplateFile(dirPath, oldHashedName, oldTemplateName)
 	if err != nil {
-		return fmt.Errorf("原模板文件不存在: %s", oldTemplateName)
+		return fmt.Errorf("查找原模板文件失败 (原模板名: %s, 哈希: %s): %w", oldTemplateName, oldHashedName, err)
 	}
 
 	// 检查旧文件是否存在

@@ -6,17 +6,17 @@
         <Button @click="closeModal" label="关闭" class="p-button-secondary" />
       </div>
 
-      <div class="flex flex-col h-full">
+      <div class="flex flex-col flex-grow min-h-0">
         <div class="flex gap-4 mb-4">
           <Button @click="validateTemplate" label="校验模板" />
           <Button @click="applyChanges" label="应用更改" class="p-button-success" />
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <div class="flex flex-col lg:flex-row gap-6 flex-grow min-h-0">
           <!-- 编辑器区域 -->
-          <div class="flex flex-col">
+          <div class="flex flex-col flex-1 min-h-0">
             <h4 class="text-lg font-medium mb-2">模板编辑</h4>
-            <div class="flex-grow border border-gray-300 rounded-md">
+            <div class="flex-grow border border-gray-300 rounded-md overflow-y-auto">
               <MonacoEditor :value="templateYaml" :key="editorKey" language="yaml" theme="vs" :options="{
                 minimap: { enabled: false },
                 automaticLayout: true,
@@ -31,47 +31,45 @@
           </div>
 
           <!-- 预览区域 -->
-          <div class="flex flex-col ">
-            <div class="overflow-y-auto">
-              <h4 class="text-lg font-medium mb-2">表单预览</h4>
-              <div class="flex-grow p-4 bg-gray-50 rounded-md min-h-[400px]">
-                <!-- Template metadata display -->
-                <div class="mb-4" v-if="fullTemplateData">
-                  <TemplateMetadataDisplay :template="fullTemplateData" />
-                </div>
+          <div class="flex flex-col flex-1 min-h-0">
+            <h4 class="text-lg font-medium mb-2">表单预览</h4>
+            <div class="flex-grow p-4 bg-gray-50 rounded-md overflow-y-auto">
+              <!-- Template metadata display -->
+              <div class="mb-4" v-if="fullTemplateData">
+                <TemplateMetadataDisplay :template="fullTemplateData" />
+              </div>
 
-                <!-- 命令选择下拉框 -->
-                <div class="mb-4" v-if="fullTemplateData && fullTemplateData.cmds && fullTemplateData.cmds.length > 0">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
-                  <Dropdown v-model="selectedPreviewCommand" :options="fullTemplateData.cmds" optionLabel="name"
-                    class="w-full" placeholder="选择要预览的命令">
-                    <template #value="slotProps">
-                      <div class="flex align-items-center">
-                        <div>{{ slotProps.value?.name || '选择命令' }}</div>
-                      </div>
-                    </template>
-                    <template #option="slotProps">
-                      <div class="flex flex-col text-left">
-                        <div>{{ slotProps.option.name }}</div>
-                        <small v-if="slotProps.option.description" class="text-gray-500">{{ slotProps.option.description
-                          }}</small>
-                      </div>
-                    </template>
-                  </Dropdown>
-                </div>
+              <!-- 命令选择下拉框 -->
+              <div class="mb-4" v-if="fullTemplateData && fullTemplateData.cmds && fullTemplateData.cmds.length > 0">
+                <label class="block text-sm font-medium text-gray-700 mb-2">选择命令</label>
+                <Dropdown v-model="selectedPreviewCommand" :options="fullTemplateData.cmds" optionLabel="name"
+                  class="w-full" placeholder="选择要预览的命令">
+                  <template #value="slotProps">
+                    <div class="flex align-items-center">
+                      <div>{{ slotProps.value?.name || '选择命令' }}</div>
+                    </div>
+                  </template>
+                  <template #option="slotProps">
+                    <div class="flex flex-col text-left">
+                      <div>{{ slotProps.option.name }}</div>
+                      <small v-if="slotProps.option.description" class="text-gray-500">{{ slotProps.option.description
+                      }}</small>
+                    </div>
+                  </template>
+                </Dropdown>
+              </div>
 
-                <div v-if="selectedPreviewCommand" class="w-full">
-                  <DynamicCommandForm :selectedCommand="selectedPreviewCommand"
-                    :commandVariableValues="commandVariableValues"
-                    @update:commandVariableValues="updateCommandVariableValues" />
-                </div>
-                <div v-else-if="hasValidationError" class="flex flex-col items-center justify-center h-64 text-red-500">
-                  <i class="pi pi-exclamation-triangle text-4xl mb-3"></i>
-                  <p>模板格式无效，请检查YAML语法</p>
-                </div>
-                <div v-else class="flex items-center justify-center h-64 text-gray-500">
-                  <p>校验模板后将显示表单预览</p>
-                </div>
+              <div v-if="selectedPreviewCommand" class="w-full">
+                <DynamicCommandForm :selectedCommand="selectedPreviewCommand"
+                  :commandVariableValues="commandVariableValues"
+                  @update:commandVariableValues="updateCommandVariableValues" />
+              </div>
+              <div v-else-if="hasValidationError" class="flex flex-col items-center justify-center h-64 text-red-500">
+                <i class="pi pi-exclamation-triangle text-4xl mb-3"></i>
+                <p>模板格式无效，请检查YAML语法</p>
+              </div>
+              <div v-else class="flex items-center justify-center h-64 text-gray-500">
+                <p>校验模板后将显示表单预览</p>
               </div>
             </div>
           </div>
@@ -113,16 +111,6 @@ const selectedPreviewCommand = ref<any>(null);
 const hasValidationError = ref(false);
 const commandVariableValues = reactive<{ [key: string]: any }>({});
 
-// Auto-validate when component is initialized with a template
-const initializeValidation = async () => {
-  if (props.initialYaml) {
-    templateYaml.value = props.initialYaml;
-    await updatePreviewFromYaml();
-  }
-};
-// Initialize validation when component is set up
-initializeValidation();
-
 // Track if the change is coming from the editor to avoid infinite loops
 let isUpdatingFromEditor = false;
 
@@ -155,21 +143,16 @@ watch(templateYaml, async (newYaml) => {
   }
 });
 
-watch(() => props.visible, (newVisible) => {
+watch(() => props.visible, async (newVisible) => {
   if (newVisible && props.initialYaml) {
-    // Check for unsaved edits before resetting templateYaml
-    if (templateYaml.value !== props.initialYaml) {
-      // Prompt user before discarding unsaved changes
-      const discard = window.confirm(
-        "You have unsaved changes. Do you want to discard them and reset to the initial template?"
-      );
-      if (discard) {
-        templateYaml.value = props.initialYaml;
-      }
-      // If not discarded, retain edits
-    } else {
-      templateYaml.value = props.initialYaml;
-    }
+    // Always reset to initialYaml when modal becomes visible
+    templateYaml.value = props.initialYaml;
+    // Force refresh the editor by updating the key to ensure Monaco picks up the value
+    editorKey.value += 1;
+    // Give Monaco a moment to reinitialize, then update the preview
+    setTimeout(async () => {
+      await updatePreviewFromYaml();
+    }, 100);
   }
 });
 

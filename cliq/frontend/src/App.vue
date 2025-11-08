@@ -1,13 +1,18 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { models } from '../wailsjs/go/models';
-import { ListFavTemplates } from '../wailsjs/go/main/App';
-import MainPage from './components/MainPage.vue';
+import MainPage from './pages/MainPage.vue';
 import DynamicCommandForm from './components/DynamicCommandForm.vue';
 import CommandExecutor from './components/CommandExecutor.vue';
-import TemplateGenerator from './components/TemplateGenerator.vue';
-import TemplateManagementPage from './components/TemplateManagementPage.vue';
-import AboutPage from './components/AboutPage.vue';
+import TemplateGenerator from './pages/TemplateGenerator.vue';
+import TemplateManagementPage from './pages/TemplateManagementPage.vue';
+import AboutPage from './pages/AboutPage.vue';
+
+declare global {
+  interface Window {
+    go: any;
+  }
+}
 
 const templateData = ref<models.TemplateFile>({} as models.TemplateFile);
 const selectedCommand = ref<any>(null);
@@ -27,15 +32,21 @@ const resetTemplate = () => {
 
 const loadFavTemplates = async () => {
   try {
-    const result = await ListFavTemplates();
-    favTemplates.value = result || [];
+    if (window.go && window.go.main && window.go.main.App && window.go.main.App.ListFavTemplates) {
+      const result = await window.go.main.App.ListFavTemplates();
+      favTemplates.value = result || [];
+    } else {
+      console.warn('Wails backend not available. Skipping loading favorite templates.');
+      favTemplates.value = [];
+    }
   } catch (error) {
     console.error('Failed to list favorite templates:', error);
+    favTemplates.value = [];
   }
 };
 
-onMounted(async () => {
-  await loadFavTemplates();
+onMounted(() => {
+  loadFavTemplates();
 });
 </script>
 

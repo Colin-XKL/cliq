@@ -19,8 +19,8 @@
       <div v-else-if="variable.type === 'file_input' || variable.type === 'file_output'"
         class="flex items-center space-x-2">
         <InputText :id="variable.name" v-model="commandVariableValuesInternal[variable.name]" readonly
-          :placeholder="variable.description" />
-        <Button type="button" @click="openFileSelection(variable.name, variable.type)" size="small">
+          :placeholder="variable.description" class="w-full" />
+        <Button type="button" @click="openFileSelection(variable.name, variable.type)" size="small" class="whitespace-nowrap">
           选择文件
         </Button>
       </div>
@@ -35,12 +35,11 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
-import { OpenFileDialog, SaveFileDialog } from '../../wailsjs/go/main/App';
+import { OpenFileDialog, SaveFileDialog, OpenFileDialogWithFilters } from '../../wailsjs/go/main/App';
 import { models } from '../../wailsjs/go/models';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
-import Dropdown from 'primevue/dropdown';
 import { useToastNotifications } from '../composables/useToastNotifications';
 
 const props = defineProps({
@@ -81,17 +80,45 @@ const commandVariables = computed(() => {
 const openFileSelection = async (variableName: string, variableType: string) => {
   let filePath = '';
   try {
-    if (variableType === 'file_input') {
-      filePath = await OpenFileDialog();
-      if (filePath) {
-        inputFilePathInternal.value = filePath;
+    // Find the variable definition to get file type options
+    const variableDef = Object.entries(props.selectedCommand.variables || {})
+      .find(([name, _]) => name === variableName);
+    
+    if (variableDef) {
+      const [, variable] = variableDef as [string, models.Variable];
+      
+      if (variableType === 'file_input') {
+        if (variable.options && variable.options.file_types) {
+          // Use specific file type filters
+          filePath = await OpenFileDialogWithFilters(formatFileFilters(variable.options.file_types));
+        } else {
+          // Fallback to all files
+          filePath = await OpenFileDialog();
+        }
+        if (filePath) {
+          inputFilePathInternal.value = filePath;
+        }
+      } else if (variableType === 'file_output') {
+        filePath = await SaveFileDialog();
+        if (filePath) {
+          outputFilePathInternal.value = filePath;
+        }
       }
-    } else if (variableType === 'file_output') {
-      filePath = await SaveFileDialog();
-      if (filePath) {
-        outputFilePathInternal.value = filePath;
+    } else {
+      // Fallback for old behavior
+      if (variableType === 'file_input') {
+        filePath = await OpenFileDialog();
+        if (filePath) {
+          inputFilePathInternal.value = filePath;
+        }
+      } else if (variableType === 'file_output') {
+        filePath = await SaveFileDialog();
+        if (filePath) {
+          outputFilePathInternal.value = filePath;
+        }
       }
     }
+    
     if (filePath) {
       commandVariableValuesInternal.value[variableName] = filePath;
     }
@@ -99,5 +126,38 @@ const openFileSelection = async (variableName: string, variableType: string) => 
     showToast('错误', `选择文件失败: ${error}`, 'error');
     console.error('选择文件失败:', error);
   }
+};
+
+/**
+ * Function to format file type filters for the backend.
+ * 
+ * Expected format for fileTypes: array of file extensions, e.g. ['.pdf', 'docx', 'xlsx']
+ * Each entry will be normalized to start with a dot and have no leading/trailing whitespace.
+ * Wildcards are automatically handled as '*.<ext>'.
+ */
+const formatFileFilters = (fileTypes: string[]) => {
+  if (!fileTypes || !Array.isArray(fileTypes) || fileTypes.length === 0) {
+    return [];
+  }
+
+  // Normalize file types: ensure each starts with a dot, remove whitespace, and remove any leading wildcards
+  const normalizedTypes = fileTypes.map(type => {
+    let ext = type.trim().replace(/^\*+/, ''); // Remove leading wildcards
+    if (!ext.startsWith('.')) {
+      ext = '.' + ext.replace(/^\./, '');
+    }
+    return ext;
+  });
+
+  // Join the normalized file types with semicolons for the pattern
+  const pattern = normalizedTypes.map(ext => `*${ext}`).join(';');
+
+  // Create a display name from the normalized file types
+  const displayName = `支持的文件 (${normalizedTypes.join(', ')})`;
+
+  return [{
+    DisplayName: displayName,
+    Pattern: pattern
+  }];
 };
 </script>

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+
 	"cliq/handlers"
 	"cliq/models"
 	"cliq/services"
@@ -35,6 +37,11 @@ func (a *App) startup(ctx context.Context) {
 // OpenFileDialog opens a file dialog and returns the selected file path
 func (a *App) OpenFileDialog() (string, error) {
 	return a.fileHandler.OpenFileDialog()
+}
+
+// OpenFileDialogWithFilters opens a file dialog with specific file type filters and returns the selected file path
+func (a *App) OpenFileDialogWithFilters(filters []runtime.FileFilter) (string, error) {
+	return a.fileHandler.OpenFileDialogWithFilters(filters)
 }
 
 // SaveFileDialog opens a save file dialog and returns the selected file path
@@ -110,7 +117,16 @@ func (a *App) DeleteFavTemplate(templateName string) error {
 
 // GetFavTemplate 读取指定收藏模板文件内容
 func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) {
-	return a.fileHandler.GetFavTemplate(templateName)
+	template, err := a.fileHandler.GetFavTemplate(templateName)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Set the loaded template to the app's template field so that 
+	// commands like GetCommandText can access it.
+	a.template = template
+	
+	return template, nil
 }
 
 // UpdateFavTemplate 更新指定收藏模板文件内容

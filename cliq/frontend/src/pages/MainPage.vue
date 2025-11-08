@@ -1,7 +1,7 @@
 <template>
   <div v-if="!templateDataInternal.name" class="text-center py-12">
     <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
-    <p class="text-gray-600 mb-8">请导入模板文件以开始使用</p>
+    <p class="text-gray-600 mb-4">请导入模板文件以开始使用</p>
     <div class="flex justify-center gap-4">
       <button @click="importTemplate"
         class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
@@ -13,10 +13,10 @@
       </button>
     </div>
     <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
-      <h3 class="text-xl font-bold text-black mb-4">或从收藏夹选择</h3>
+      <p class="text-gray-600  mb-4">或从收藏夹选择</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
-          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+          class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 border-gray-300"
           @click="loadFavoriteTemplate(template.name)">
           <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
           <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
@@ -31,8 +31,12 @@
       <div class="flex gap-2">
         <button @click="importTemplate"
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
-          更换模板
+          从文件导入
         </button>
+        <FavoriteTemplateSelector 
+          :favTemplates="favTemplates"
+          @template-selected="handleTemplateSelected"
+          @close="handleSelectorClose" />
         <button @click="showUrlImportDialog = true"
           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
           URL导入
@@ -87,6 +91,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
@@ -95,7 +100,8 @@ import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wai
 import { models } from '../../wailsjs/go/models';
 import { useToastNotifications } from '../composables/useToastNotifications';
 import { SaveFavTemplate } from '../../wailsjs/go/main/App';
-import TemplateMetadataDisplay from './TemplateMetadataDisplay.vue';
+import TemplateMetadataDisplay from '../components/TemplateMetadataDisplay.vue';
+import FavoriteTemplateSelector from '../components/FavoriteTemplateSelector.vue';
 
 const props = defineProps({
   templateData: { type: Object as () => models.TemplateFile, required: true },
@@ -199,25 +205,25 @@ const loadFavoriteTemplate = async (templateName: string) => {
     if (result) {
       // Emit reset to clear any existing state in related components
       emit('reset-template');
-      
+
       // Update internal state
       templateDataInternal.value = result;
       selectedCommandInternal.value = null; // Reset selected command on new template import
       if (result.cmds && result.cmds.length > 0) {
         selectedCommandInternal.value = result.cmds[0];
       }
-      
+
       // Important: After parent state is reset, update it with the new template data
       // This ensures that the parent's reactive system picks up the changes
       emit('update:templateData', result);
       emit('update:selectedCommand', selectedCommandInternal.value);
-      
+
       // Force next tick update to ensure all components re-render properly
       // This ensures that child components like DynamicCommandForm get updated
       setTimeout(() => {
         // No additional action needed, the emits should handle the updates
       }, 0);
-      
+
       showToast('成功', `模板 ${templateName} 加载成功`, 'success');
     }
   } catch (error) {
@@ -226,6 +232,30 @@ const loadFavoriteTemplate = async (templateName: string) => {
   }
 };
 
+const handleTemplateSelected = (template: models.TemplateFile) => {
+  try {
+    // Emit reset to clear any existing state in related components
+    emit('reset-template');
 
+    // Update internal state
+    templateDataInternal.value = template;
+    selectedCommandInternal.value = null; // Reset selected command on new template import
+    if (template.cmds && template.cmds.length > 0) {
+      selectedCommandInternal.value = template.cmds[0];
+    }
+
+    // Important: After parent state is reset, update it with the new template data
+    // This ensures that the parent's reactive system picks up the changes
+    emit('update:templateData', template);
+    emit('update:selectedCommand', selectedCommandInternal.value);
+  } catch (error) {
+    showToast('错误', `处理收藏模板失败: ${error}`, 'error');
+    console.error('处理收藏模板失败:', error);
+  }
+};
+
+const handleSelectorClose = () => {
+  // No specific action needed when selector closes
+};
 
 </script>

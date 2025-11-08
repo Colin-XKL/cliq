@@ -90,7 +90,14 @@ func (ts *TemplateService) GenerateYAMLFromTemplate(template *models.TemplateFil
 		return "", fmt.Errorf("序列化模板失败: %w", err)
 	}
 
-	return string(data), nil
+	yamlStr := string(data)
+	
+	// Check if the generated YAML is empty or just contains default values
+	if yamlStr == "" || yamlStr == "{}\n" {
+		return "", fmt.Errorf("生成的YAML内容为空或无效")
+	}
+
+	return yamlStr, nil
 }
 
 // ValidateYAMLTemplate 验证YAML模板格式
