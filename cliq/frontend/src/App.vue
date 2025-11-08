@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import { models } from '../wailsjs/go/models';
-import MainPage from './pages/MainPage.vue';
-import DynamicCommandForm from './components/DynamicCommandForm.vue';
-import CommandExecutor from './components/CommandExecutor.vue';
-import TemplateGenerator from './pages/TemplateGenerator.vue';
-import TemplateManagementPage from './pages/TemplateManagementPage.vue';
-import AboutPage from './pages/AboutPage.vue';
+import { models } from '@/wailsjs/go/models';
+import MainPage from '@/pages/MainPage.vue';
+import DynamicCommandForm from '@/components/DynamicCommandForm.vue';
+import CommandExecutor from '@/components/CommandExecutor.vue';
+import TemplateGenerator from '@/pages/TemplateGenerator.vue';
+import TemplateManagementPage from '@/pages/TemplateManagementPage.vue';
+import AboutPage from '@/pages/AboutPage.vue';
 
 declare global {
   interface Window {

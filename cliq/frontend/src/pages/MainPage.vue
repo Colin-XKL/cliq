@@ -96,12 +96,12 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '../../wailsjs/go/main/App';
-import { models } from '../../wailsjs/go/models';
-import { useToastNotifications } from '../composables/useToastNotifications';
-import { SaveFavTemplate } from '../../wailsjs/go/main/App';
-import TemplateMetadataDisplay from '../components/TemplateMetadataDisplay.vue';
-import FavoriteTemplateSelector from '../components/FavoriteTemplateSelector.vue';
+import { ImportTemplate, ImportTemplateFromURL, GetFavTemplate } from '@/wailsjs/go/main/App';
+import { models } from '@/wailsjs/go/models';
+import { useToastNotifications } from '@/composables/useToastNotifications';
+import { SaveFavTemplate } from '@/wailsjs/go/main/App';
+import TemplateMetadataDisplay from '@/components/TemplateMetadataDisplay.vue';
+import FavoriteTemplateSelector from '@/components/FavoriteTemplateSelector.vue';
 
 const props = defineProps({
   templateData: { type: Object as () => models.TemplateFile, required: true },

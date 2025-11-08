@@ -35,12 +35,12 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
-import { OpenFileDialog, SaveFileDialog, OpenFileDialogWithFilters } from '../../wailsjs/go/main/App';
-import { models } from '../../wailsjs/go/models';
+import { OpenFileDialog, SaveFileDialog, OpenFileDialogWithFilters } from '@/wailsjs/go/main/App';
+import { models } from '@/wailsjs/go/models';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
-import { useToastNotifications } from '../composables/useToastNotifications';
+import { useToastNotifications } from '@/composables/useToastNotifications';
 
 const props = defineProps({
   selectedCommand: { type: Object as () => any, default: null },

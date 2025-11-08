@@ -38,14 +38,14 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import { models } from '../../wailsjs/go/models';
-import { ListFavTemplates, DeleteFavTemplate, GetFavTemplate, UpdateFavTemplate, GenerateYAMLFromTemplate, ParseYAMLToTemplate } from '../../wailsjs/go/main/App';
+import { models } from '@/wailsjs/go/models';
+import { ListFavTemplates, DeleteFavTemplate, GetFavTemplate, UpdateFavTemplate, GenerateYAMLFromTemplate, ParseYAMLToTemplate } from '@/wailsjs/go/main/App';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import { useToastNotifications } from '../composables/useToastNotifications';
-import TemplateEditorModal from '../components/TemplateEditorModal.vue';
+import { useToastNotifications } from '@/composables/useToastNotifications';
+import TemplateEditorModal from '@/components/TemplateEditorModal.vue';
 
 const favTemplates = ref<models.TemplateFile[]>([]);
 const displayConfirmation = ref(false);

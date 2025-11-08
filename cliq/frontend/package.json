@@ -24,6 +24,7 @@
   "devDependencies": {
     "@babel/types": "^7.18.10",
     "@primevue/auto-import-resolver": "^4.4.1",
+    "@types/node": "^24.10.0",
     "typescript": "^4.6.4",
     "unplugin-vue-components": "^29.1.0"
   }
