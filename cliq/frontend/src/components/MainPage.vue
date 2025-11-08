@@ -31,7 +31,11 @@
       <div class="flex gap-2">
         <button @click="importTemplate"
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
-          更换模板
+          从文件导入
+        </button>
+        <button @click="showFavoriteSelectionDialog = true"
+          class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 focus:outline-none">
+          从收藏夹选择
         </button>
         <button @click="showUrlImportDialog = true"
           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
@@ -87,6 +91,31 @@
       </div>
     </div>
   </div>
+  
+  <!-- Favorite Template Selection Dialog -->
+  <div v-if="showFavoriteSelectionDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg w-full max-w-md max-h-90vh overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">从收藏夹选择模板</h3>
+        <button @click="closeFavoriteSelectionDialog" class="text-gray-500 hover:text-gray-700">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      
+      <div v-if="favTemplates && favTemplates.length > 0" class="space-y-2">
+        <div v-for="(template, index) in favTemplates" :key="template.name"
+          class="p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          @click="selectAndLoadFavoriteTemplate(template.name)">
+          <h4 class="font-medium text-gray-800">{{ template.name }}</h4>
+          <p class="text-sm text-gray-500 truncate">{{ template.description }}</p>
+        </div>
+      </div>
+      
+      <div v-else class="text-center py-8 text-gray-500">
+        <p>暂无收藏模板</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -110,6 +139,7 @@ const { showToast } = useToastNotifications();
 const templateDataInternal = ref(props.templateData);
 const selectedCommandInternal = ref(props.selectedCommand);
 const showUrlImportDialog = ref(false);
+const showFavoriteSelectionDialog = ref(false);
 const templateUrl = ref('');
 
 watch(() => props.templateData, (newValue) => {
@@ -226,6 +256,38 @@ const loadFavoriteTemplate = async (templateName: string) => {
   }
 };
 
+const closeFavoriteSelectionDialog = () => {
+  showFavoriteSelectionDialog.value = false;
+};
 
+const selectAndLoadFavoriteTemplate = async (templateName: string) => {
+  try {
+    const result = await GetFavTemplate(templateName);
+    if (result) {
+      // Emit reset to clear any existing state in related components
+      emit('reset-template');
+
+      // Update internal state
+      templateDataInternal.value = result;
+      selectedCommandInternal.value = null; // Reset selected command on new template import
+      if (result.cmds && result.cmds.length > 0) {
+        selectedCommandInternal.value = result.cmds[0];
+      }
+
+      // Important: After parent state is reset, update it with the new template data
+      // This ensures that the parent's reactive system picks up the changes
+      emit('update:templateData', result);
+      emit('update:selectedCommand', selectedCommandInternal.value);
+
+      // Close the dialog
+      showFavoriteSelectionDialog.value = false;
+
+      showToast('成功', `模板 ${templateName} 加载成功`, 'success');
+    }
+  } catch (error) {
+    showToast('错误', `加载收藏模板失败: ${error}`, 'error');
+    console.error('加载收藏模板失败:', error);
+  }
+};
 
 </script>
