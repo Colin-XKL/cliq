@@ -267,6 +267,9 @@ func (fh *FileHandler) findTemplateFile(dirPath, hashedName, originalName string
 		filePath := filepath.Join(dirPath, fileName)
 		if _, err := os.Stat(filePath); err == nil {
 			return filePath, nil // 找到文件
+		} else if !os.IsNotExist(err) {
+			// 如果不是 "文件不存在" 错误，则返回具体错误 (如权限问题)
+			return "", fmt.Errorf("检查模板文件状态时出错 (%s): %w", filePath, err)
 		}
 	}
 
@@ -276,6 +279,9 @@ func (fh *FileHandler) findTemplateFile(dirPath, hashedName, originalName string
 		filePath := filepath.Join(dirPath, fileName)
 		if _, err := os.Stat(filePath); err == nil {
 			return filePath, nil // 找到文件
+		} else if !os.IsNotExist(err) {
+			// 如果不是 "文件不存在" 错误，则返回具体错误 (如权限问题)
+			return "", fmt.Errorf("检查模板文件状态时出错 (%s): %w", filePath, err)
 		}
 	}
 
