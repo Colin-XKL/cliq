@@ -128,18 +128,33 @@ const openFileSelection = async (variableName: string, variableType: string) => 
   }
 };
 
-// Function to format file type filters for the backend
+/**
+ * Function to format file type filters for the backend.
+ * 
+ * Expected format for fileTypes: array of file extensions, e.g. ['.pdf', 'docx', 'xlsx']
+ * Each entry will be normalized to start with a dot and have no leading/trailing whitespace.
+ * Wildcards are automatically handled as '*.<ext>'.
+ */
 const formatFileFilters = (fileTypes: string[]) => {
   if (!fileTypes || !Array.isArray(fileTypes) || fileTypes.length === 0) {
     return [];
   }
 
-  // Join the file types with semicolons for the pattern
-  const pattern = fileTypes.map(type => `*${type}`).join(';');
-  
-  // Create a display name from the file types
-  const displayName = `支持的文件 (${fileTypes.join(', ')})`;
-  
+  // Normalize file types: ensure each starts with a dot, remove whitespace, and remove any leading wildcards
+  const normalizedTypes = fileTypes.map(type => {
+    let ext = type.trim().replace(/^\*+/, ''); // Remove leading wildcards
+    if (!ext.startsWith('.')) {
+      ext = '.' + ext.replace(/^\./, '');
+    }
+    return ext;
+  });
+
+  // Join the normalized file types with semicolons for the pattern
+  const pattern = normalizedTypes.map(ext => `*${ext}`).join(';');
+
+  // Create a display name from the normalized file types
+  const displayName = `支持的文件 (${normalizedTypes.join(', ')})`;
+
   return [{
     DisplayName: displayName,
     Pattern: pattern
