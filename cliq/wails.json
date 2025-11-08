@@ -1,11 +1,12 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "cliq",
-  "outputfilename": "cliq",
+  "name": "cliQ",
+  "outputfilename": "cliQ",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
+  "wailsjsdir": "frontend/src/",
   "author": {
     "name": "colin",
     "email": "Colin_XKL@outlook.com"

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { models } from '../../wailsjs/go/models';
+import { models } from '@/wailsjs/go/models';
 
 interface Props {
   template: models.TemplateFile | null;

@@ -34,9 +34,9 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { models } from '../../wailsjs/go/models';
-import { GetFavTemplate } from '../../wailsjs/go/main/App';
-import { useToastNotifications } from '../composables/useToastNotifications';
+import { models } from '@/wailsjs/go/models';
+import { GetFavTemplate } from '@/wailsjs/go/main/App';
+import { useToastNotifications } from '@/composables/useToastNotifications';
 
 interface Props {
   favTemplates: models.TemplateFile[];

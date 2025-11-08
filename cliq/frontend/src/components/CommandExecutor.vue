@@ -46,8 +46,8 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { ExecuteCommand, GetCommandText } from '../../wailsjs/go/main/App';
-import { useToastNotifications } from '../composables/useToastNotifications';
+import { ExecuteCommand, GetCommandText } from '@/wailsjs/go/main/App';
+import { useToastNotifications } from '@/composables/useToastNotifications';
 
 const props = defineProps({
   selectedCommand: { type: Object as () => any, default: null },

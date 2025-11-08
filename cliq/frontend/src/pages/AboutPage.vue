@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts" setup>
-import { OpenUrlUseSystemBrowser } from '../utils/open_url'
+import { OpenUrlUseSystemBrowser } from '@/utils/open_url'
 </script>
 
 <style scoped>
