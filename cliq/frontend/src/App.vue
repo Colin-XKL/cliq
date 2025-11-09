@@ -52,13 +52,8 @@ onMounted(() => {
 
 <template>
   <div class="homepage-bg h-full w-full">
-    <div class="flex flex-col items-center justify-center h-[100]vh p-6">
-      <div class="w-full max-w-4xl">
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold mt-4">cliQ</h1>
-          <p class="text-xl mt-2">将复杂的 CLI 命令转化为直观、易用的图形用户界面</p>
-        </div>
-
+    <div class="flex flex-col items-center justify-center h-[100]vh p-4">
+      <div class="w-full max-w-5xl">
         <!-- Navigation tabs -->
         <div class="flex justify-center mb-6">
           <div class="inline-flex bg-gray-100 rounded-lg p-1">
@@ -81,7 +76,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[70vh]">
+        <div class="bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[80vh]">
           <!-- Main View -->
           <div v-if="currentView === 'main'">
             <MainPage v-model:templateData="templateData" v-model:selectedCommand="selectedCommand"
@@ -104,7 +99,7 @@ onMounted(() => {
           <div v-if="currentView === 'template-management'">
             <TemplateManagementPage />
           </div>
-          
+
           <!-- About View -->
           <div v-if="currentView === 'about'">
             <AboutPage />
