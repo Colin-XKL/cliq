@@ -61,10 +61,17 @@ func (a *App) ImportTemplateFromURL(url string) (*models.TemplateFile, error) {
 		return nil, fmt.Errorf("下载失败，状态码: %d", resp.StatusCode)
 	}
 
-	// 读取响应内容
-	data, err := io.ReadAll(resp.Body)
+	// 限制读取大小为 1MB (1024 * 1024 bytes) to prevent out-of-memory errors
+	const maxSize = 1024 * 1024 // 1MB in bytes
+	limitReader := io.LimitReader(resp.Body, maxSize+1)
+	
+	// 读取响应内容 with size limit
+	data, err := io.ReadAll(limitReader)
 	if err != nil {
 		return nil, fmt.Errorf("读取模板内容失败: %w", err)
+	}
+	if len(data) > maxSize {
+		return nil, fmt.Errorf("模板文件过大，超过 1MB 限制")
 	}
 
 	// 解析并验证YAML内容
