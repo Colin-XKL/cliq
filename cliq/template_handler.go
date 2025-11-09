@@ -36,13 +36,14 @@ func (a *App) ImportTemplate() (*models.TemplateFile, error) {
 		return nil, errors.New("未选择文件")
 	}
 
-	// 解析模板文件
-	template, err := ParseTemplateFile(filePath)
+	// 解析并验证模板文件
+	template, err := a.parseAndValidateTemplateFromFile(filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	a.template = template // 将解析后的模板赋值给 App 结构体
+	// 设置应用的模板
+	a.setTemplate(template)
 
 	return template, nil
 }
@@ -66,41 +67,39 @@ func (a *App) ImportTemplateFromURL(url string) (*models.TemplateFile, error) {
 		return nil, fmt.Errorf("读取模板内容失败: %w", err)
 	}
 
-	// 解析YAML
-	var template models.TemplateFile
-	err = yaml.Unmarshal(data, &template)
+	// 解析并验证YAML内容
+	template, err := a.parseAndValidateTemplateFromData(data)
 	if err != nil {
-		return nil, fmt.Errorf("解析YAML失败: %w", err)
-	}
-
-	// 使用服务进行验证（包括变量名唯一性）
-	service := services.NewTemplateService()
-	yamlStr := string(data)
-	if err := service.ValidateYAMLTemplate(yamlStr); err != nil {
 		return nil, err
 	}
 
-	a.template = &template // 将解析后的模板赋值给 App 结构体
+	// 设置应用的模板
+	a.setTemplate(template)
 
-	return &template, nil
+	return template, nil
 }
 
-// ParseTemplateFile 解析模板文件
-func ParseTemplateFile(filePath string) (*models.TemplateFile, error) {
+// parseAndValidateTemplateFromFile 解析并验证文件中的模板
+func (a *App) parseAndValidateTemplateFromFile(filePath string) (*models.TemplateFile, error) {
 	// 读取文件内容
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("读取文件失败: %w", err)
 	}
 
+	return a.parseAndValidateTemplateFromData(data)
+}
+
+// parseAndValidateTemplateFromData 解析并验证数据中的模板
+func (a *App) parseAndValidateTemplateFromData(data []byte) (*models.TemplateFile, error) {
 	// 解析YAML
 	var template models.TemplateFile
-	err = yaml.Unmarshal(data, &template)
+	err := yaml.Unmarshal(data, &template)
 	if err != nil {
 		return nil, fmt.Errorf("解析YAML失败: %w", err)
 	}
 
-	// 使用服务进行验证（包括变量名唯一性）
+	// 使用服务进行验证（包括变量名唯一性等）
 	service := services.NewTemplateService()
 	yamlStr := string(data)
 	if err := service.ValidateYAMLTemplate(yamlStr); err != nil {
@@ -108,6 +107,11 @@ func ParseTemplateFile(filePath string) (*models.TemplateFile, error) {
 	}
 
 	return &template, nil
+}
+
+// setTemplate 设置应用的当前模板
+func (a *App) setTemplate(template *models.TemplateFile) {
+	a.template = template
 }
 
 
