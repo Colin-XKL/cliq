@@ -173,11 +173,14 @@ const openFileSelection = async (variableName: string, variableType: string) => 
 
     if (variableDef) {
       if (variableType === 'file_input') {
-        if (variableDef.options && variableDef.options.file_types) {
+        if (variableDef.options && 
+            variableDef.options.file_types && 
+            Array.isArray(variableDef.options.file_types) && 
+            variableDef.options.file_types.length > 0) {
           // Use specific file type filters
           filePath = await OpenFileDialogWithFilters(formatFileFilters(variableDef.options.file_types));
         } else {
-          // Fallback to all files
+          // Fallback to all files when no file_types are specified or are empty
           filePath = await OpenFileDialog();
         }
         if (filePath) {
