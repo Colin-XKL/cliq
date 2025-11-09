@@ -16,7 +16,7 @@
   <!-- 执行结果模态框 -->
   <div v-if="showResultModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
     @click.self="closeResultModal">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-3xl max-h-[80vh] overflow-y-auto">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white max-w-4xl max-h-[80vh] overflow-y-auto">
       <div class="mt-3 text-center">
         <!-- 状态图标 -->
         <div :class="executionStatus === 'success' ? 'text-green-500' : 'text-red-500'" class="text-4xl mb-4">

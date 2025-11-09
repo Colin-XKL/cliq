@@ -1,7 +1,10 @@
 <template>
-  <div v-if="!templateDataInternal.name" class="text-center py-12">
-    <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
-    <p class="text-gray-600 mb-4">请导入模板文件以开始使用</p>
+  <div v-if="!templateDataInternal.name" class="text-center py-8">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-black mb-4">欢迎使用 cliQ</h2>
+      <p class="text-xl mt-2">将复杂的 CLI 命令转化为直观、易用的图形用户界面</p>
+    </div>
+    <p class="text-gray-400 mb-4">请导入模板文件以开始使用</p>
     <div class="flex justify-center gap-4">
       <button @click="importTemplate"
         class="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 focus:outline-none text-lg">
@@ -13,7 +16,7 @@
       </button>
     </div>
     <div v-if="favTemplates && favTemplates.length > 0" class="mt-8">
-      <p class="text-gray-600  mb-4">或从收藏夹选择</p>
+      <p class="text-gray-400 mb-4">或从收藏夹选择</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="(template, index) in favTemplates.slice(0, 9)" :key="template.name"
           class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 border-gray-300"
@@ -33,9 +36,7 @@
           class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 focus:outline-none">
           从文件导入
         </button>
-        <FavoriteTemplateSelector 
-          :favTemplates="favTemplates"
-          @template-selected="handleTemplateSelected"
+        <FavoriteTemplateSelector :favTemplates="favTemplates" @template-selected="handleTemplateSelected"
           @close="handleSelectorClose" />
         <button @click="showUrlImportDialog = true"
           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
