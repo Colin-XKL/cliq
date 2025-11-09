@@ -42,6 +42,36 @@ import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
 import { useToastNotifications } from '@/composables/useToastNotifications';
 
+// Helper function to extract directory path and filename from a full path
+function parsePath(inputPath: string): { directory: string; filename: string } {
+  // Handle both Unix and Windows style paths
+  const lastSlashIndex = Math.max(inputPath.lastIndexOf('/'), inputPath.lastIndexOf('\\'));
+  
+  if (lastSlashIndex === -1) {
+    // No directory separator found, entire string is filename
+    return { directory: '', filename: inputPath };
+  } else {
+    const directory = inputPath.substring(0, lastSlashIndex + 1);
+    const filename = inputPath.substring(lastSlashIndex + 1);
+    return { directory, filename };
+  }
+}
+
+// Helper function to generate a new filename with "_new" suffix
+function generateNewFilename(filename: string): string {
+  const fileExtensionIndex = filename.lastIndexOf('.');
+
+  if (fileExtensionIndex > 0) {
+    // Split filename and extension (e.g., "document.pdf" -> "document" + ".pdf")
+    const namePart = filename.substring(0, fileExtensionIndex);
+    const extensionPart = filename.substring(fileExtensionIndex);
+    return `${namePart}_new${extensionPart}`;
+  } else {
+    // No extension found, just add _new suffix (e.g., "README" -> "README_new")
+    return `${filename}_new`;
+  }
+}
+
 const props = defineProps({
   selectedCommand: { type: Object as () => any, default: null },
   commandVariableValues: { type: Object as () => { [key: string]: any }, required: true },
@@ -77,34 +107,12 @@ watch(inputFilePathInternal, (newInputPath) => {
       
       // If output path is not set, auto-populate it
       if (!currentOutputPath || currentOutputPath === '') {
-        // Handle both Unix and Windows style paths
-        const lastSlashIndex = Math.max(newInputPath.lastIndexOf('/'), newInputPath.lastIndexOf('\\'));
-        let pathWithoutFileName, fileName;
-        
-        if (lastSlashIndex === -1) {
-          // No directory separator found, entire string is filename
-          pathWithoutFileName = '';
-          fileName = newInputPath;
-        } else {
-          pathWithoutFileName = newInputPath.substring(0, lastSlashIndex + 1);
-          fileName = newInputPath.substring(lastSlashIndex + 1);
-        }
-        
-        const fileExtensionIndex = fileName.lastIndexOf('.');
-        
-        let newFileName;
-        if (fileExtensionIndex > 0) {
-          // Split filename and extension (e.g., "document.pdf" -> "document" + ".pdf")
-          const namePart = fileName.substring(0, fileExtensionIndex);
-          const extensionPart = fileName.substring(fileExtensionIndex);
-          newFileName = `${namePart}_new${extensionPart}`;
-        } else {
-          // No extension found, just add _new suffix (e.g., "README" -> "README_new")
-          newFileName = `${fileName}_new`;
-        }
+        // Use helper functions to parse the path and generate new filename
+        const { directory, filename } = parsePath(newInputPath);
+        const newFileName = generateNewFilename(filename);
         
         // Create new output path by combining the directory path with new filename
-        const outputFilePath = pathWithoutFileName + newFileName;
+        const outputFilePath = directory + newFileName;
         
         // Set the output file path
         commandVariableValuesInternal.value[variable.name] = outputFilePath;
