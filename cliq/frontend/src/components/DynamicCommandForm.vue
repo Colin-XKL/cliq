@@ -66,6 +66,59 @@ watch(commandVariableValuesInternal, (newValue) => {
   emit('update:commandVariableValues', newValue);
 }, { deep: true });
 
+// Watch for input file path changes to auto-populate output file path if not set
+watch(inputFilePathInternal, (newInputPath) => {
+  if (newInputPath) {
+    // Find all output file variables in the command
+    const outputFileVariables = commandVariables.value.filter(variable => variable.type === 'file_output');
+    
+    outputFileVariables.forEach(variable => {
+      const currentOutputPath = commandVariableValuesInternal.value[variable.name];
+      
+      // If output path is not set, auto-populate it
+      if (!currentOutputPath || currentOutputPath === '') {
+        // Handle both Unix and Windows style paths
+        const lastSlashIndex = Math.max(newInputPath.lastIndexOf('/'), newInputPath.lastIndexOf('\\'));
+        let pathWithoutFileName, fileName;
+        
+        if (lastSlashIndex === -1) {
+          // No directory separator found, entire string is filename
+          pathWithoutFileName = '';
+          fileName = newInputPath;
+        } else {
+          pathWithoutFileName = newInputPath.substring(0, lastSlashIndex + 1);
+          fileName = newInputPath.substring(lastSlashIndex + 1);
+        }
+        
+        const fileExtensionIndex = fileName.lastIndexOf('.');
+        
+        let newFileName;
+        if (fileExtensionIndex > 0) {
+          // Split filename and extension (e.g., "document.pdf" -> "document" + ".pdf")
+          const namePart = fileName.substring(0, fileExtensionIndex);
+          const extensionPart = fileName.substring(fileExtensionIndex);
+          newFileName = `${namePart}_new${extensionPart}`;
+        } else {
+          // No extension found, just add _new suffix (e.g., "README" -> "README_new")
+          newFileName = `${fileName}_new`;
+        }
+        
+        // Create new output path by combining the directory path with new filename
+        const outputFilePath = pathWithoutFileName + newFileName;
+        
+        // Set the output file path
+        commandVariableValuesInternal.value[variable.name] = outputFilePath;
+        
+        // If this is the main output file path prop, update that too
+        if (variable.name === 'output_file' || variable.name === 'output') {
+          outputFilePathInternal.value = outputFilePath;
+          emit('update:outputFilePath', outputFilePath);
+        }
+      }
+    });
+  }
+});
+
 
 const commandVariables = computed(() => {
   if (props.selectedCommand && props.selectedCommand.variables) {
