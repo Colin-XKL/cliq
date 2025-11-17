@@ -7,6 +7,7 @@ import CommandExecutor from '@/components/CommandExecutor.vue';
 import TemplateGenerator from '@/pages/TemplateGenerator.vue';
 import TemplateManagementPage from '@/pages/TemplateManagementPage.vue';
 import AboutPage from '@/pages/AboutPage.vue';
+import SettingsPage from '@/pages/SettingsPage.vue';
 
 declare global {
   interface Window {
@@ -19,7 +20,7 @@ const selectedCommand = ref<any>(null);
 const commandVariableValues = ref<{ [key: string]: any }>({});
 const isProcessing = ref(false);
 const commandOutput = ref('');
-const currentView = ref<'main' | 'generator' | 'template-management' | 'about'>('main'); // Add view state
+const currentView = ref<'main' | 'generator' | 'template-management' | 'about' | 'settings'>('main'); // Add view state
 const favTemplates = ref<models.TemplateFile[]>([]);
 
 const resetTemplate = () => {
@@ -73,6 +74,10 @@ onMounted(() => {
               :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'about' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
               关于
             </button>
+            <button @click="currentView = 'settings'"
+              :class="['px-4 py-2 rounded-md text-sm font-medium', currentView === 'settings' ? 'bg-white shadow text-gray-900' : 'text-gray-600']">
+              设置
+            </button>
           </div>
         </div>
 
@@ -103,6 +108,11 @@ onMounted(() => {
           <!-- About View -->
           <div v-if="currentView === 'about'">
             <AboutPage />
+          </div>
+
+          <!-- Settings View -->
+          <div v-if="currentView === 'settings'">
+            <SettingsPage />
           </div>
         </div>
       </div>

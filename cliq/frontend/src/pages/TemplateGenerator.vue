@@ -100,6 +100,7 @@ import { ref, computed, watch } from 'vue';
 import { ParseCommandToTemplate, GenerateYAMLFromTemplate, SaveYAMLToFile, ParseYAMLToTemplate, SaveFavTemplate, ValidateYAMLTemplate } from '@/wailsjs/go/main/App';
 import { useToastNotifications } from '@/composables/useToastNotifications';
 import TemplateEditorModal from '@/components/TemplateEditorModal.vue';
+import { useSettings, DEFAULT_BASE_URL } from '@/composables/useSettings';
 
 const { showToast } = useToastNotifications();
 
@@ -157,7 +158,11 @@ const smartGenerateTemplate = async () => {
   }
   try {
     isGenerating.value = true;
-    const resp = await fetch('/api/generate-template', {
+    const { loadSettings } = useSettings();
+    const s = await loadSettings();
+    const base = (s.hub_base_url || DEFAULT_BASE_URL).replace(/\/$/, '');
+    const url = `${base}/api/generate-template`;
+    const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command_example: smartCommandExample.value, description: smartDescription.value, encoding: 'plain' })
