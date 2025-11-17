@@ -4,7 +4,7 @@
     <Card>
       <template #title>
         <div class="flex items-center justify-between">
-          <span>后端 Base URL</span>
+          <span>CliQ Hub Base URL</span>
         </div>
       </template>
       <template #content>
@@ -53,14 +53,14 @@ watch(baseUrl, (val) => validate(val))
 
 onMounted(async () => {
   const s = await loadSettings()
-  baseUrl.value = s.hub_base_url || DEFAULT_BASE_URL
+  baseUrl.value = s.cliq_hub_base_url || DEFAULT_BASE_URL
 })
 
 const onSave = async () => {
   if (error.value) return
   try {
     saving.value = true
-    await saveSettings({ hub_base_url: baseUrl.value.replace(/\/$/, '') })
+    await saveSettings({ cliq_hub_base_url: baseUrl.value.replace(/\/$/, '') })
     showToast('成功', '配置已保存', 'success')
   } catch (e: any) {
     showToast('错误', String(e), 'error')
@@ -73,7 +73,7 @@ const onReset = async () => {
   try {
     saving.value = true
     baseUrl.value = DEFAULT_BASE_URL
-    await saveSettings({ hub_base_url: DEFAULT_BASE_URL })
+    await saveSettings({ cliq_hub_base_url: DEFAULT_BASE_URL })
     showToast('成功', '已重置为默认', 'success')
   } catch (e: any) {
     showToast('错误', String(e), 'error')
