@@ -161,7 +161,7 @@ const smartGenerateTemplate = async () => {
     const { loadSettings } = useSettings();
     const s = await loadSettings();
     const base = (s.cliq_hub_base_url || DEFAULT_BASE_URL).replace(/\/$/, '');
-    const url = `${base}/api/generate-template`;
+    const url = `${base}/v1/templates/generate`;
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

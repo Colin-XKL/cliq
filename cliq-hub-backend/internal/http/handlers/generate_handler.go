@@ -14,10 +14,11 @@ import (
 )
 
 type GenerateHandler struct {
-	client llm.Client
+	client    llm.Client
+	debugMode bool
 }
 
-func NewGenerateHandler(c llm.Client) *GenerateHandler { return &GenerateHandler{client: c} }
+func NewGenerateHandler(c llm.Client, debugMode bool) *GenerateHandler { return &GenerateHandler{client: c, debugMode: debugMode} }
 
 type GenerateRequest struct {
 	CommandExample string `json:"command_example" binding:"required"`
@@ -55,14 +56,22 @@ func (h *GenerateHandler) Handle(c *gin.Context) {
 		Author:         req.Author,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadGateway, errors.New("llm_error", err.Error()))
+		errResp := errors.New("llm_error", err.Error())
+		if h.debugMode {
+			errResp = errResp.WithMeta("llm_request", req)
+		}
+		c.JSON(http.StatusBadGateway, errResp)
 		return
 	}
 
 	raw := yamlcodec.StripFences(content)
 	t, err := yamlcodec.UnmarshalTemplate(raw)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, errors.New("llm_output_invalid", "failed to parse YAML from LLM"))
+		errResp := errors.New("llm_output_invalid", "failed to parse YAML from LLM")
+		if h.debugMode {
+			errResp = errResp.WithMeta("llm_request", req).WithMeta("llm_output", raw)
+		}
+		c.JSON(http.StatusBadGateway, errResp)
 		return
 	}
 
@@ -84,7 +93,11 @@ func (h *GenerateHandler) Handle(c *gin.Context) {
 	}
 
 	if err := validation.ValidateTemplate(t); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, errors.New("validation_error", err.Error()))
+		errResp := errors.New("validation_error", err.Error())
+		if h.debugMode {
+			errResp = errResp.WithMeta("llm_request", req).WithMeta("llm_output", content)
+		}
+		c.JSON(http.StatusUnprocessableEntity, errResp)
 		return
 	}
 

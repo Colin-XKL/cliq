@@ -1,3 +1,20 @@
+export namespace config {
+	
+	export class AppSettings {
+	    CliqHubBaseURL: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AppSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.CliqHubBaseURL = source["CliqHubBaseURL"];
+	    }
+	}
+
+}
+
 export namespace frontend {
 	
 	export class FileFilter {

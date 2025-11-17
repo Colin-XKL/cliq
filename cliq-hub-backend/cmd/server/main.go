@@ -21,7 +21,8 @@ func main() {
         log.Fatalf("llm client init error: %v", err)
     }
 
-    r := router.New(client)
+    debugMode := os.Getenv("GIN_MODE") != "release"
+    r := router.New(client, debugMode)
 
     port := os.Getenv("PORT")
     if port == "" {
