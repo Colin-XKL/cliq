@@ -3,11 +3,11 @@ package models
 // TemplateFile 表示一个完整的模板文件
 type TemplateFile struct {
 	// 模板元信息
-	Name                string              `yaml:"name" json:"name"`
-	Description         string              `yaml:"description" json:"description"`
-	Version             string              `yaml:"version" json:"version"`
-	Author              string              `yaml:"author" json:"author"`
-	CliqTemplateVersion string              `yaml:"cliq_template_version" json:"cliq_template_version"`
+	Name                string `yaml:"name" json:"name"`
+	Description         string `yaml:"description" json:"description"`
+	Version             string `yaml:"version" json:"version"`
+	Author              string `yaml:"author" json:"author"`
+	CliqTemplateVersion string `yaml:"cliq_template_version" json:"cliq_template_version"`
 
 	// 命令列表
 	Cmds []Command `yaml:"cmds" json:"cmds"`
@@ -35,7 +35,7 @@ type VariableDefinition struct {
 
 // 变量类型常量
 const (
-	VarTypeText       = "text"
+	VarTypeText       = "string"
 	VarTypeFileInput  = "file_input"
 	VarTypeFileOutput = "file_output"
 	VarTypeBoolean    = "boolean"

@@ -206,7 +206,7 @@ func determineVariableType(varName string) string {
 		strings.Contains(varName, "flag") || strings.Contains(varName, "show") {
 		return models.VarTypeBoolean
 	} else {
-		return models.VarTypeText
+		return "string"
 	}
 }
 

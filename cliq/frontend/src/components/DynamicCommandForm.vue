@@ -7,7 +7,7 @@
         <span v-if="variable.required" class="text-red-500">*</span>
       </label>
       <!-- 文本输入 -->
-      <InputText v-if="variable.type === 'text'" :id="variable.name"
+      <InputText v-if="variable.type === 'string'" :id="variable.name"
         v-model="commandVariableValuesInternal[variable.name]" class="w-full" :placeholder="variable.description" />
       <!-- 数字输入 -->
       <InputNumber v-else-if="variable.type === 'number'" :id="variable.name"
@@ -26,7 +26,7 @@
       </div>
       <!-- 下拉选择 -->
       <Select v-else-if="variable.type === 'select'" :id="variable.name"
-        v-model="commandVariableValuesInternal[variable.name]" :options="Object.keys(variable.options || {})"
+        v-model="commandVariableValuesInternal[variable.name]" :options="variable.options?.options || []"
         class="w-full" :placeholder="variable.description" />
       <small v-if="variable.description" class="mt-1 text-sm text-gray-500">{{ variable.description }}</small>
     </div>

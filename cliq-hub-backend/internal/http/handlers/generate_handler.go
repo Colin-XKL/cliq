@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,7 +19,9 @@ type GenerateHandler struct {
 	debugMode bool
 }
 
-func NewGenerateHandler(c llm.Client, debugMode bool) *GenerateHandler { return &GenerateHandler{client: c, debugMode: debugMode} }
+func NewGenerateHandler(c llm.Client, debugMode bool) *GenerateHandler {
+	return &GenerateHandler{client: c, debugMode: debugMode}
+}
 
 type GenerateRequest struct {
 	CommandExample string `json:"command_example" binding:"required"`
@@ -93,6 +96,9 @@ func (h *GenerateHandler) Handle(c *gin.Context) {
 	}
 
 	if err := validation.ValidateTemplate(t); err != nil {
+		if h.debugMode {
+			fmt.Printf("Validation Error: %v\n", err)
+		}
 		errResp := errors.New("validation_error", err.Error())
 		if h.debugMode {
 			errResp = errResp.WithMeta("llm_request", req).WithMeta("llm_output", content)

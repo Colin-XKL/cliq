@@ -128,7 +128,7 @@ Each variable in the `variables` list has the following fields:
 
 The following variable types are supported:
 
-### `text`
+### `string`
 - **UI Component:** Text input field
 - **Purpose:** General text input
 - **Options:**

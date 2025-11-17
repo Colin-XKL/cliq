@@ -8,11 +8,12 @@ import (
 )
 
 var allowedTypes = map[string]struct{}{
+    "string": {},
     "file_input": {},
     "file_output": {},
-    "string": {},
     "number": {},
     "boolean": {},
+    "select": {},
 }
 
 func ValidateTemplate(t *tpl.Template) error {
