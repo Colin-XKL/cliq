@@ -61,10 +61,12 @@ author: {{.Author}}
 `
 
 	// Parse the template
-	tmpl, err := template.New("userPrompt").Parse(strings.TrimSpace(userPromptTemplate))
-	if err != nil {
-		return "", fmt.Errorf("failed to parse user prompt template: %w", err)
-	}
+ // use pre-parsed template from client
+ var userPromptBuilder strings.Builder
+ if err := c.userPromptTmpl.Execute(&userPromptBuilder, req); err != nil {
+ 	return "", fmt.Errorf("failed to execute user prompt template: %w", err)
+ }
+ userPrompt := userPromptBuilder.String()
 
 	// Execute the template with the request data
 	var userPromptBuilder strings.Builder

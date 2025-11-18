@@ -16,16 +16,15 @@ func StripThinkTags(s string) string {
 	return thinkTagRegex.ReplaceAllString(s, "")
 }
 
+var fencedBlockRegex = regexp.MustCompile(`(?s)^\s*```(?:yaml|yml)?\s*\n(.*?)\n\s*```\s*$`)
+
 func StripFences(s string) string {
 	out := StripThinkTags(s)
 	out = strings.TrimSpace(out)
-	// remove Markdown fenced code blocks if present
-	if strings.HasPrefix(out, "```") {
-		// find first newline after fence
-		// naive approach: remove triple backticks anywhere
-		out = strings.ReplaceAll(out, "```yaml", "")
-		out = strings.ReplaceAll(out, "```", "")
-		out = strings.TrimSpace(out)
+
+	// Extract content only if the entire string is a single fenced code block.
+	if m := fencedBlockRegex.FindStringSubmatch(out); m != nil && len(m) > 1 {
+		return strings.TrimSpace(m[1])
 	}
 	return out
 }

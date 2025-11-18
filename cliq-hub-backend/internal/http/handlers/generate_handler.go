@@ -96,9 +96,9 @@ func (h *GenerateHandler) Handle(c *gin.Context) {
 	}
 
 	if err := validation.ValidateTemplate(t); err != nil {
-		if h.debugMode {
-			fmt.Printf("Validation Error: %v\n", err)
-		}
+  if h.debugMode {
+  	log.Printf("Validation Error: %v", err)
+  }
 		errResp := errors.New("validation_error", err.Error())
 		if h.debugMode {
 			errResp = errResp.WithMeta("llm_request", req).WithMeta("llm_output", content)
