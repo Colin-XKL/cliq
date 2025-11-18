@@ -1,4 +1,4 @@
-package yamlcodec
+package yaml
 
 import (
 	"encoding/base64"
@@ -10,14 +10,13 @@ import (
 	tpl "cliq-hub-backend/internal/template"
 )
 
-var thinkTagRegex = regexp.MustCompile(`(?s)<think>.*?</think>`)
+var thinkTagRegex = regexp.MustCompile(`(?s){{think}}.*?{{/think}}`)
 
 func StripThinkTags(s string) string {
 	return thinkTagRegex.ReplaceAllString(s, "")
 }
 
-var fencedBlockRegex = regexp.MustCompile(`(?s)^\s*```(?:yaml|yml)?\s*\n(.*?)\n\s*```\s*$`)
-
+var fencedBlockRegex = regexp.MustCompile("(?s)^\\s*" + "```" + "(?:yaml|yml)?\\s*\\n(.*?)\\n\\s*" + "```" + "\\s*$")
 func StripFences(s string) string {
 	out := StripThinkTags(s)
 	out = strings.TrimSpace(out)

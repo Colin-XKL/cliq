@@ -13,6 +13,20 @@ import (
 	"cliq-hub-backend/internal/config"
 )
 
+const userPromptTemplate = `
+Given a CLI command example and optional metadata, generate a complete cliqfile YAML.
+
+Requirements:
+- Fields: name, description, version ("1.0"), author, cliq_template_version ("1.0"), cmds (with name, description, command, variables).
+- Return RAW YAML ONLY (no code fences, no extra text).
+
+Input:
+command_example: {{.CommandExample}}
+name: {{.Name}}
+description: {{.Description}}
+author: {{.Author}}
+`
+
 //go:embed assets/cliqfile_syntax.md
 var cliqfileSyntaxDoc string
 
@@ -45,33 +59,14 @@ func (c *client) GenerateCliqfileFromPrompt(ctx context.Context, req GenerateReq
 	// Define the system prompt that includes the CLIQ file syntax documentation
 	systemPrompt := fmt.Sprintf("You generate ONLY valid cliqfile YAML per schema. No prose. No markdown fences.\n\nCLIQFILE SYNTAX DOCUMENTATION:\n%s", cliqfileSyntaxDoc)
 
-	// Define the user prompt template with Go template syntax
-	userPromptTemplate := `
-Given a CLI command example and optional metadata, generate a complete cliqfile YAML.
-
-Requirements:
-- Fields: name, description, version ("1.0"), author, cliq_template_version ("1.0"), cmds (with name, description, command, variables).
-- Return RAW YAML ONLY (no code fences, no extra text).
-
-Input:
-command_example: {{.CommandExample}}
-name: {{.Name}}
-description: {{.Description}}
-author: {{.Author}}
-`
-
-	// Parse the template
- // use pre-parsed template from client
- var userPromptBuilder strings.Builder
- if err := c.userPromptTmpl.Execute(&userPromptBuilder, req); err != nil {
- 	return "", fmt.Errorf("failed to execute user prompt template: %w", err)
- }
- userPrompt := userPromptBuilder.String()
-
-	// Execute the template with the request data
-	var userPromptBuilder strings.Builder
-	err = tmpl.Execute(&userPromptBuilder, req)
+	// Parse the template and execute it with the request data
+	tmpl, err := template.New("userPrompt").Parse(userPromptTemplate)
 	if err != nil {
+		return "", fmt.Errorf("failed to parse user prompt template: %w", err)
+	}
+	
+	var userPromptBuilder strings.Builder
+	if err := tmpl.Execute(&userPromptBuilder, req); err != nil {
 		return "", fmt.Errorf("failed to execute user prompt template: %w", err)
 	}
 	userPrompt := userPromptBuilder.String()
