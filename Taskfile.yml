@@ -4,8 +4,19 @@ version: '3'
 
 tasks:
   dev:
-    cmds: 
-    - cd cliq && wails dev
+    cmds:
+      - task: dev:{{.CLI_ARGS}}
+    silent: true
+
+  dev:cliq:
+    cmds:
+      - cd cliq && wails dev
+
+  dev:cliq-hub-backend:
+    cmds:
+      - cp doc/cliqfile_syntax.md cliq-hub-backend/internal/llm/assets/cliqfile_syntax.md
+      - cd cliq-hub-backend && go run cmd/server/main.go
+
   clean:
     cmds:
       - rm -rf cliq/frontend/dist

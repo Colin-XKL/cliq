@@ -18,6 +18,10 @@ export function GenerateYAMLFromTemplate(arg1) {
   return window['go']['main']['App']['GenerateYAMLFromTemplate'](arg1);
 }
 
+export function GetAppSettings() {
+  return window['go']['main']['App']['GetAppSettings']();
+}
+
 export function GetCommandText(arg1, arg2) {
   return window['go']['main']['App']['GetCommandText'](arg1, arg2);
 }
@@ -64,6 +68,10 @@ export function SaveFileDialog() {
 
 export function SaveYAMLToFile(arg1) {
   return window['go']['main']['App']['SaveYAMLToFile'](arg1);
+}
+
+export function UpdateAppSettings(arg1) {
+  return window['go']['main']['App']['UpdateAppSettings'](arg1);
 }
 
 export function UpdateFavTemplate(arg1, arg2, arg3) {

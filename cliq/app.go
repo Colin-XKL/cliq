@@ -1,22 +1,24 @@
 package main
 
 import (
-	"context"
-	"fmt"
+    "context"
+    "fmt"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"cliq/handlers"
-	"cliq/models"
-	"cliq/services"
+    "cliq/handlers"
+    "cliq/models"
+    "cliq/services"
+    "cliq/config"
 )
 
 // App struct
 type App struct {
-	ctx             context.Context
-	template        *models.TemplateFile // 添加 template 字段
-	fileHandler     *handlers.FileHandler
-	templateService *services.TemplateService
+    ctx             context.Context
+    template        *models.TemplateFile // 添加 template 字段
+    fileHandler     *handlers.FileHandler
+    templateService *services.TemplateService
+    settingsService *config.SettingsService
 }
 
 // NewApp creates a new App application struct
@@ -30,8 +32,13 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
-	a.fileHandler.Startup(ctx)
+    a.ctx = ctx
+    a.fileHandler.Startup(ctx)
+    // init settings service
+    ss, err := config.NewSettingsService()
+    if err == nil {
+        a.settingsService = ss
+    }
 }
 
 // OpenFileDialog opens a file dialog and returns the selected file path
@@ -131,5 +138,30 @@ func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) 
 
 // UpdateFavTemplate 更新指定收藏模板文件内容
 func (a *App) UpdateFavTemplate(oldTemplateName string, newTemplateName string, updatedTemplate *models.TemplateFile) error {
-	return a.fileHandler.UpdateFavTemplate(oldTemplateName, newTemplateName, updatedTemplate)
+    return a.fileHandler.UpdateFavTemplate(oldTemplateName, newTemplateName, updatedTemplate)
+}
+
+func (a *App) GetAppSettings() (*config.AppSettings, error) {
+    if a.settingsService == nil {
+        ss, err := config.NewSettingsService()
+        if err != nil {
+            return nil, err
+        }
+        a.settingsService = ss
+    }
+    return a.settingsService.Load()
+}
+
+func (a *App) UpdateAppSettings(partial map[string]any) error {
+    if a.settingsService == nil {
+        ss, err := config.NewSettingsService()
+        if err != nil {
+            return err
+        }
+        a.settingsService = ss
+    }
+    if err := a.settingsService.Update(partial); err != nil {
+        return err
+    }
+    return nil
 }
