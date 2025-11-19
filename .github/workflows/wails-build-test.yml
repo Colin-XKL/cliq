@@ -22,6 +22,8 @@ jobs:
         
     - name: Set up Pnpm
       uses: pnpm/action-setup@v4
+      with:
+        version: 9
     
     - name: Build wails
       uses: dAppServer/wails-build-action@main
