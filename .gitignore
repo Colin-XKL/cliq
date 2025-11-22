@@ -1,13 +1,15 @@
+# common
 .idea
 .vscode
 node_modules
-apps/cliq-app/cliq
-apps/cliq-app/frontend/package.json.md5
-apps/**/pnpm-lock.yaml
 .nx/
-static/
-project-graph.html
-apps/cliq-frontend/dist/index.html
-apps/cliq-frontend/dist/assets/index-YhZmG0Ov.js
+
+# build dist
 cliq
+apps/cliq-app/cliq
+apps/cliq-frontend/dist/
 apps/cliq-hub-backend/server
+
+# miscellaneous
+apps/cliq-app/frontend/package.json.md5
+project-graph.html
