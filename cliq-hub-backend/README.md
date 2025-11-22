@@ -6,18 +6,32 @@ A new Golang backend that generates `.cliqfile.yaml` templates via LLM.
 - Language: Go 1.22
 - Dependencies: `gin`, `go-openai`, `yaml.v3`
 
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `LLM_API_KEY` | **Yes** | (none) | API key for authenticating with the LLM service (OpenAI-compatible) |
+| `LLM_MODEL` | **Yes** | (none) | The specific LLM model to use (e.g., `gpt-4o-mini`) |
+| `LLM_BASE_URL` | No | (empty) | Custom base URL for OpenAI-compatible endpoints |
+| `PORT` | No | `8080` | HTTP server port number |
+| `GIN_MODE` | No | `release` | Gin framework mode - set to anything other than "release" to enable debug mode |
+
 ### Run
 
-1. Set environment variables:
+1. Set required environment variables:
 
-   - `LLM_API_KEY`: your OpenAI-compatible API key
-   - `LLM_MODEL`: e.g. `gpt-4o-mini`
-   - `LLM_BASE_URL` (optional): custom base URL for OpenAI-compatible endpoints
+```bash
+export LLM_API_KEY=sk-...
+export LLM_MODEL=gpt-4o-mini
+# Optional: export LLM_BASE_URL=https://your-custom-endpoint.com
+# Optional: export PORT=3000
+# Optional: export GIN_MODE=debug
+```
 
 2. Start server:
 
-```
-LLM_API_KEY=sk-... LLM_MODEL=gpt-4o-mini go run ./cliq-hub-backend/cmd/server
+```bash
+go run ./cliq-hub-backend/cmd/server
 ```
 
 Server listens on `:8080` by default (set `PORT` to override).
