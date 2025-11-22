@@ -1,4 +1,9 @@
-cliq/cliq
 .idea
 .vscode
-cliq/frontend/package.json.md5
+node_modules
+apps/cliq-app/cliq
+apps/cliq-app/frontend/package.json.md5
+apps/**/pnpm-lock.yaml
+.nx/
+static/
+project-graph.html
