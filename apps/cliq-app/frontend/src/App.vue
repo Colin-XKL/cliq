@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { models } from '@/wailsjs/go/models';
 import MainPage from '@/pages/MainPage.vue';
-import DynamicCommandForm from '@/components/DynamicCommandForm.vue';
+import { DynamicCommandForm } from '@repo/shared-vue-ui';
 import CommandExecutor from '@/components/CommandExecutor.vue';
 import TemplateGenerator from '@/pages/TemplateGenerator.vue';
 import TemplateManagementPage from '@/pages/TemplateManagementPage.vue';

@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue';
 import MonacoEditor from 'monaco-editor-vue3';
-import DynamicCommandForm from '@/components/DynamicCommandForm.vue';
+import { DynamicCommandForm } from '@repo/shared-vue-ui';
 import TemplateMetadataDisplay from '@/components/TemplateMetadataDisplay.vue';
 import { ValidateYAMLTemplate, ParseYAMLToTemplate } from '@/wailsjs/go/main/App';
 import { models } from '@/wailsjs/go/models';
