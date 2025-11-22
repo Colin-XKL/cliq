@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"context"
-	"crypto/md5"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
+    "context"
+    "crypto/md5"
+    "fmt"
+    "os"
+    "os/exec"
+    "path/filepath"
+    "strings"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+    "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"cliq/models"
+    "repo/shared-go-lib/models"
 
-	"gopkg.in/yaml.v3"
+    "gopkg.in/yaml.v3"
 )
 
 // FileHandler handles file-related operations

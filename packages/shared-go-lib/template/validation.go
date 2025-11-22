@@ -1,10 +1,10 @@
-package validation
+package template
 
 import (
     "fmt"
     "strings"
 
-    tpl "cliq-hub-backend/internal/template"
+    "repo/shared-go-lib/models"
 )
 
 var allowedTypes = map[string]struct{}{
@@ -16,7 +16,7 @@ var allowedTypes = map[string]struct{}{
     "select": {},
 }
 
-func ValidateTemplate(t *tpl.Template) error {
+func ValidateTemplate(t *models.TemplateFile) error {
     if t.Name == "" || t.Description == "" || t.Version == "" || t.Author == "" || t.CliqTemplateVersion == "" {
         return fmt.Errorf("missing required metadata fields")
     }

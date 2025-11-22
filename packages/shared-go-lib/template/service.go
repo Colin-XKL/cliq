@@ -1,12 +1,12 @@
-package services
+package template
 
 import (
-	"fmt"
-	"strings"
+    "fmt"
+    "strings"
 
-	"gopkg.in/yaml.v3"
+    "gopkg.in/yaml.v3"
 
-	"cliq/models"
+    "repo/shared-go-lib/models"
 )
 
 // TemplateService provides template-related business logic
@@ -117,9 +117,9 @@ func (ts *TemplateService) ValidateYAMLTemplate(yamlStr string) error {
 	}
 
 	// 验证模板结构（包括变量名唯一性）
-	if err := validateTemplate(&template); err != nil {
-		return err
-	}
+    if err := ValidateTemplate(&template); err != nil {
+        return err
+    }
 
 	return nil
 }
@@ -138,9 +138,9 @@ func (ts *TemplateService) ParseYAMLToTemplate(yamlStr string) (*models.Template
 	}
 
 	// 验证模板结构（包括变量名唯一性）
-	if err := validateTemplate(&template); err != nil {
-		return nil, fmt.Errorf("模板格式验证失败: %w", err)
-	}
+    if err := ValidateTemplate(&template); err != nil {
+        return nil, fmt.Errorf("模板格式验证失败: %w", err)
+    }
 
 	return &template, nil
 }
@@ -220,62 +220,4 @@ func getLabelFromVariableName(varName string) string {
 		label = strings.ToUpper(string(label[0])) + label[1:]
 	}
 	return label
-}
-
-// validateTemplate 验证模板是否合法
-func validateTemplate(template *models.TemplateFile) error {
-	// 验证基本信息
-	if template.Name == "" {
-		return fmt.Errorf("模板名称不能为空")
-	}
-
-	if template.CliqTemplateVersion == "" {
-		return fmt.Errorf("模板版本不能为空")
-	}
-
-	// 验证命令
-	if len(template.Cmds) == 0 {
-		return fmt.Errorf("模板必须包含至少一个命令")
-	}
-
-	for i, cmd := range template.Cmds {
-		if cmd.Name == "" {
-			return fmt.Errorf("命令 #%d 名称不能为空", i+1)
-		}
-
-		if cmd.Command == "" {
-			return fmt.Errorf("命令 #%d 命令模板不能为空", i+1)
-		}
-
-		// 验证变量
-		for j, varDef := range cmd.Variables {
-			if varDef.Name == "" {
-				return fmt.Errorf("命令 #%d 变量 #%d 名称不能为空", i+1, j+1)
-			}
-			if varDef.Label == "" {
-				return fmt.Errorf("命令 #%d 变量 %s 的标签不能为空", i+1, varDef.Name)
-			}
-
-			// 验证变量类型
-			switch varDef.Type {
-			case models.VarTypeText, models.VarTypeFileInput, models.VarTypeFileOutput, models.VarTypeBoolean, models.VarTypeNumber, models.VarTypeSelect:
-				// 合法类型
-			default:
-				return fmt.Errorf("命令 #%d 变量 %s 的类型 %s 不支持", i+1, varDef.Name, varDef.Type)
-			}
-		}
-	}
-
-	// 验证变量名唯一性
-	for i, cmd := range template.Cmds {
-		seen := make(map[string]bool)
-		for _, varDef := range cmd.Variables {
-			if seen[varDef.Name] {
-				return fmt.Errorf("命令 #%d 中存在重复变量名: %s", i+1, varDef.Name)
-			}
-			seen[varDef.Name] = true
-		}
-	}
-
-	return nil
 }

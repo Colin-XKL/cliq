@@ -1,17 +1,17 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
+    "errors"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"gopkg.in/yaml.v3"
+    "gopkg.in/yaml.v3"
 
-	"cliq/models"
-	"cliq/services"
+    "repo/shared-go-lib/models"
+    templ "repo/shared-go-lib/template"
 )
 
 // ImportTemplate 导入模板文件
@@ -107,7 +107,7 @@ func (a *App) parseAndValidateTemplateFromData(data []byte) (*models.TemplateFil
 	}
 
 	// 使用服务进行验证（包括变量名唯一性等）
-	service := services.NewTemplateService()
+    service := templ.NewTemplateService()
 	yamlStr := string(data)
 	if err := service.ValidateYAMLTemplate(yamlStr); err != nil {
 		return nil, err

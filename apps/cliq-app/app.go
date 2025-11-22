@@ -6,9 +6,9 @@ import (
 
     "github.com/wailsapp/wails/v2/pkg/runtime"
 
+    "repo/shared-go-lib/models"
+    templ "repo/shared-go-lib/template"
     "cliq/handlers"
-    "cliq/models"
-    "cliq/services"
     "cliq/config"
 )
 
@@ -17,7 +17,7 @@ type App struct {
     ctx             context.Context
     template        *models.TemplateFile // 添加 template 字段
     fileHandler     *handlers.FileHandler
-    templateService *services.TemplateService
+    templateService *templ.TemplateService
     settingsService *config.SettingsService
 }
 
@@ -25,7 +25,7 @@ type App struct {
 func NewApp() *App {
 	return &App{
 		fileHandler:     handlers.NewFileHandler(),
-		templateService: services.NewTemplateService(),
+        templateService: templ.NewTemplateService(),
 	}
 }
 
@@ -79,7 +79,7 @@ func (a *App) GetCommandText(commandID string, variables map[string]interface{})
 
 // ParseCommandToTemplate 将命令字符串解析为模板
 func (a *App) ParseCommandToTemplate(commandStr string) (*models.TemplateFile, error) {
-	return a.templateService.ParseCommandToTemplate(commandStr)
+    return a.templateService.ParseCommandToTemplate(commandStr)
 }
 
 // GenerateYAMLFromTemplate 将模板对象转换为YAML字符串

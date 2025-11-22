@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"log"
-	"net/http"
-	"strings"
+    "log"
+    "net/http"
+    "strings"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
 
-	"cliq-hub-backend/internal/errors"
-	"cliq-hub-backend/internal/llm"
-	"cliq-hub-backend/internal/validation"
-	"cliq-hub-backend/internal/version"
-	yamlcodec "cliq-hub-backend/pkg/yaml"
+    "cliq-hub-backend/internal/errors"
+    "cliq-hub-backend/internal/llm"
+    "cliq-hub-backend/internal/version"
+    yamlcodec "repo/shared-go-lib/yaml"
+    validation "repo/shared-go-lib/template"
 )
 
 type GenerateHandler struct {
