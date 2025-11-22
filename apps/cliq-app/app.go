@@ -1,44 +1,44 @@
 package main
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
 
-    "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-    "repo/shared-go-lib/models"
-    templ "repo/shared-go-lib/template"
-    "cliq/handlers"
-    "cliq/config"
+	"cliq/config"
+	"cliq/handlers"
+	"repo/shared-go-lib/models"
+	templ "repo/shared-go-lib/template"
 )
 
 // App struct
 type App struct {
-    ctx             context.Context
-    template        *models.TemplateFile // 添加 template 字段
-    fileHandler     *handlers.FileHandler
-    templateService *templ.TemplateService
-    settingsService *config.SettingsService
+	ctx             context.Context
+	template        *models.TemplateFile // 添加 template 字段
+	fileHandler     *handlers.FileHandler
+	templateService *templ.TemplateService
+	settingsService *config.SettingsService
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
 		fileHandler:     handlers.NewFileHandler(),
-        templateService: templ.NewTemplateService(),
+		templateService: templ.NewTemplateService(),
 	}
 }
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-    a.ctx = ctx
-    a.fileHandler.Startup(ctx)
-    // init settings service
-    ss, err := config.NewSettingsService()
-    if err == nil {
-        a.settingsService = ss
-    }
+	a.ctx = ctx
+	a.fileHandler.Startup(ctx)
+	// init settings service
+	ss, err := config.NewSettingsService()
+	if err == nil {
+		a.settingsService = ss
+	}
 }
 
 // OpenFileDialog opens a file dialog and returns the selected file path
@@ -58,12 +58,12 @@ func (a *App) SaveFileDialog() (string, error) {
 
 // ExecuteCommand executes a shell command with the given input and output file paths
 func (a *App) ExecuteCommand(commandID string, variables map[string]interface{}) (string, error) {
-    if a.fileHandler == nil {
-        return "", fmt.Errorf("fileHandler 未初始化")
-    }
-    if a.template == nil {
-        return "", fmt.Errorf("模板未加载")
-    }
+	if a.fileHandler == nil {
+		return "", fmt.Errorf("fileHandler 未初始化")
+	}
+	if a.template == nil {
+		return "", fmt.Errorf("模板未加载")
+	}
 	return a.fileHandler.ExecuteCommand(a.template, commandID, variables)
 }
 
@@ -79,7 +79,7 @@ func (a *App) GetCommandText(commandID string, variables map[string]interface{})
 
 // ParseCommandToTemplate 将命令字符串解析为模板
 func (a *App) ParseCommandToTemplate(commandStr string) (*models.TemplateFile, error) {
-    return a.templateService.ParseCommandToTemplate(commandStr)
+	return a.templateService.ParseCommandToTemplate(commandStr)
 }
 
 // GenerateYAMLFromTemplate 将模板对象转换为YAML字符串
@@ -128,40 +128,40 @@ func (a *App) GetFavTemplate(templateName string) (*models.TemplateFile, error) 
 	if err != nil {
 		return nil, err
 	}
-	
-	// Set the loaded template to the app's template field so that 
+
+	// Set the loaded template to the app's template field so that
 	// commands like GetCommandText can access it.
 	a.template = template
-	
+
 	return template, nil
 }
 
 // UpdateFavTemplate 更新指定收藏模板文件内容
 func (a *App) UpdateFavTemplate(oldTemplateName string, newTemplateName string, updatedTemplate *models.TemplateFile) error {
-    return a.fileHandler.UpdateFavTemplate(oldTemplateName, newTemplateName, updatedTemplate)
+	return a.fileHandler.UpdateFavTemplate(oldTemplateName, newTemplateName, updatedTemplate)
 }
 
 func (a *App) GetAppSettings() (*config.AppSettings, error) {
-    if a.settingsService == nil {
-        ss, err := config.NewSettingsService()
-        if err != nil {
-            return nil, err
-        }
-        a.settingsService = ss
-    }
-    return a.settingsService.Load()
+	if a.settingsService == nil {
+		ss, err := config.NewSettingsService()
+		if err != nil {
+			return nil, err
+		}
+		a.settingsService = ss
+	}
+	return a.settingsService.Load()
 }
 
 func (a *App) UpdateAppSettings(partial map[string]any) error {
-    if a.settingsService == nil {
-        ss, err := config.NewSettingsService()
-        if err != nil {
-            return err
-        }
-        a.settingsService = ss
-    }
-    if err := a.settingsService.Update(partial); err != nil {
-        return err
-    }
-    return nil
+	if a.settingsService == nil {
+		ss, err := config.NewSettingsService()
+		if err != nil {
+			return err
+		}
+		a.settingsService = ss
+	}
+	if err := a.settingsService.Update(partial); err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,17 +1,17 @@
 package main
 
 import (
-    "errors"
-    "fmt"
-    "io"
-    "net/http"
-    "os"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-    "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 
-    "repo/shared-go-lib/models"
-    templ "repo/shared-go-lib/template"
+	"repo/shared-go-lib/models"
+	templ "repo/shared-go-lib/template"
 )
 
 // ImportTemplate 导入模板文件
@@ -64,7 +64,7 @@ func (a *App) ImportTemplateFromURL(url string) (*models.TemplateFile, error) {
 	// 限制读取大小为 1MB (1024 * 1024 bytes) to prevent out-of-memory errors
 	const maxSize = 1024 * 1024 // 1MB in bytes
 	limitReader := io.LimitReader(resp.Body, maxSize+1)
-	
+
 	// 读取响应内容 with size limit
 	data, err := io.ReadAll(limitReader)
 	if err != nil {
@@ -107,7 +107,7 @@ func (a *App) parseAndValidateTemplateFromData(data []byte) (*models.TemplateFil
 	}
 
 	// 使用服务进行验证（包括变量名唯一性等）
-    service := templ.NewTemplateService()
+	service := templ.NewTemplateService()
 	yamlStr := string(data)
 	if err := service.ValidateYAMLTemplate(yamlStr); err != nil {
 		return nil, err
@@ -120,5 +120,3 @@ func (a *App) parseAndValidateTemplateFromData(data []byte) (*models.TemplateFil
 func (a *App) setTemplate(template *models.TemplateFile) {
 	a.template = template
 }
-
-
